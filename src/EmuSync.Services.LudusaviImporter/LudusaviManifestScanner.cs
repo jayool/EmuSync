@@ -13,11 +13,11 @@ public class LudusaviManifestScanner(
     ILocalDataAccessor localDataAccessor
 ) : ILudusaviManifestScanner
 {
-    ILogger<LudusaviManifestScanner> _logger = logger;
+    private readonly ILogger<LudusaviManifestScanner> _logger = logger;
     private readonly ILocalDataAccessor _localDataAccessor = localDataAccessor;
     private int _completedCount = 0;
     private int _totalCount = 0;
-    private static bool _isWindows = PlatformHelper.GetOsPlatform() == Domain.Enums.OsPlatform.Windows;
+    private static readonly bool _isWindows = PlatformHelper.GetOsPlatform() == Domain.Enums.OsPlatform.Windows;
 
     private static readonly List<string> _invalidPaths = [
         "C:",
@@ -51,7 +51,7 @@ public class LudusaviManifestScanner(
 
         var bag = new ConcurrentBag<FoundGame>();
         int maxConcurrency = DetermineMaxConcurrency();
-        var semaphore = new SemaphoreSlim(maxConcurrency);
+        using var semaphore = new SemaphoreSlim(maxConcurrency);
         var tasks = new List<Task>();
 
         _logger.LogInformation("Scanning {gameCount} games with a concurrency of {maxConcurrency}", gameDefinitions.Items.Count, maxConcurrency);
@@ -64,11 +64,11 @@ public class LudusaviManifestScanner(
 
             await semaphore.WaitAsync(cancellationToken);
 
-            tasks.Add(Task.Run(async () =>
+            tasks.Add(Task.Run(() =>
             {
                 try
                 {
-                    bool found = ScanLocalSystemAsync(kvp.Key, kvp.Value, out List<string>? suggestedFolderPaths);
+                    bool found = ScanLocalSystem(kvp.Key, kvp.Value, out List<string>? suggestedFolderPaths);
 
                     if (found)
                     {
@@ -106,7 +106,7 @@ public class LudusaviManifestScanner(
         return result;
     }
 
-    private bool ScanLocalSystemAsync(string gameName, GameDefinition game, out List<string>? suggestedPaths)
+    private bool ScanLocalSystem(string gameName, GameDefinition game, out List<string>? suggestedPaths)
     {
 
         try

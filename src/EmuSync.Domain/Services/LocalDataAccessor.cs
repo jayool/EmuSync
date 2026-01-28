@@ -10,9 +10,8 @@ public class LocalDataAccessor : ILocalDataAccessor
 {
     public async Task<T> ReadFileContentsAsync<T>(string filePath, CancellationToken cancellationToken = default)
     {
-        string fileContent = await File.ReadAllTextAsync(filePath, cancellationToken);
-        var result = JsonSerializer.Deserialize<T>(fileContent);
-        return result!;
+        await using var fs = File.OpenRead(filePath);
+        return (await JsonSerializer.DeserializeAsync<T>(fs, cancellationToken: cancellationToken))!;
     }
 
     public async Task<T?> ReadFileContentsOrDefaultAsync<T>(string filePath, CancellationToken cancellationToken = default)

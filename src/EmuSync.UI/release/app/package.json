@@ -1,7 +1,7 @@
 {
     "name": "emusync",
-    "version": "1.0.0",
-    "description": "Keep your emulator game saves in sync across your devices",
+    "version": "1.0.8",
+    "description": "EmuSync",
     "license": "MIT",
     "main": "./dist/main/main.js",
     "scripts": {

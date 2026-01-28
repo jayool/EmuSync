@@ -11,9 +11,11 @@ namespace EmuSync.Services.Storage.GoogleDrive;
 
 public class GoogleAuthHandler(
     IOptions<GoogleDriveStorageProviderConfig> options,
-    ILocalDataAccessor localDataAccessor
+    ILocalDataAccessor localDataAccessor,
+    HttpClient httpClient
 )
 {
+    private readonly HttpClient _httpClient = httpClient;
     private const string UserId = "local-user";
     private readonly GoogleDriveStorageProviderConfig _options = options.Value;
     private readonly ILocalDataAccessor _localDataAccessor = localDataAccessor;
@@ -49,8 +51,6 @@ public class GoogleAuthHandler(
 
     public async Task SaveCodeAsync(string code, CancellationToken cancellationToken = default)
     {
-        using var client = new HttpClient();
-
         var content = new FormUrlEncodedContent(new Dictionary<string, string>
         {
             ["client_id"] = _options.ClientId,
@@ -60,9 +60,9 @@ public class GoogleAuthHandler(
             ["code_verifier"] = _codeVerifier
         });
 
-        var response = await client.PostAsync("https://oauth2.googleapis.com/token", content);
+        using var response = await _httpClient.PostAsync("https://oauth2.googleapis.com/token", content, cancellationToken);
 
-        string json = await response.Content.ReadAsStringAsync();
+        string json = await response.Content.ReadAsStringAsync(cancellationToken);
 
         response.EnsureSuccessStatusCode();
 

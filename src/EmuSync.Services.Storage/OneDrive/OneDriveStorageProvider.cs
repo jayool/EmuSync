@@ -12,13 +12,14 @@ namespace EmuSync.Services.Storage.OneDrive;
 
 public class OneDriveStorageProvider(
     IOptions<OneDriveStorageProviderConfig> options,
-    MicrosoftAuthHandler authHandler
-) : IStorageProvider, IDisposable
+    MicrosoftAuthHandler authHandler,
+    HttpClient httpClient
+) : IStorageProvider
 {
     private readonly OneDriveStorageProviderConfig _options = options.Value;
     private readonly MicrosoftAuthHandler _authHandler = authHandler;
 
-    private HttpClient _httpClient;
+    private readonly HttpClient _httpClient = httpClient;
 
     public async Task<TData?> GetJsonFileAsync<TData>(string fileName, CancellationToken cancellationToken = default)
     {
@@ -214,11 +215,6 @@ public class OneDriveStorageProvider(
             throw new InvalidOperationException("No microsoft token is present on the device");
         }
 
-        _httpClient ??= new()
-        {
-            Timeout = Timeout.InfiniteTimeSpan
-        };
-
         return _httpClient;
 
     }
@@ -250,39 +246,4 @@ public class OneDriveStorageProvider(
 
         return request;
     }
-
-    #region Dispose
-
-    private bool _disposedValue;
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!_disposedValue)
-        {
-            if (disposing)
-            {
-                _httpClient?.Dispose();
-            }
-
-            // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-            // TODO: set large fields to null
-            _disposedValue = true;
-        }
-    }
-
-    // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-    // ~GoogleDriveStorageProvider()
-    // {
-    //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-    //     Dispose(disposing: false);
-    // }
-
-    public void Dispose()
-    {
-        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        Dispose(disposing: true);
-        GC.SuppressFinalize(this);
-    }
-
-    #endregion
 }

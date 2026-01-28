@@ -80,3 +80,9 @@ This is the same release as 1.0.2, but with a fix for Windows not correctly iden
 - Reworked how EmuSync uploads/downloads files .
     - This is mostly for people who are uploading larger folders and may have experienced issues where they'd fail.
 - Various minor bugfixes related to the Dropbox storage provider.
+
+# v1.0.8
+
+- Updated EmuSync agent from .NET 8 to .NET 10
+    - Nothing is functionally different here, but there is likely to be some minor performance gains and less memory usage overall
+- Fixed a couple of typos

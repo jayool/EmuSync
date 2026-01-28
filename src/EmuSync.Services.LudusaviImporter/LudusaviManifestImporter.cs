@@ -9,14 +9,20 @@ using YamlDotNet.Serialization.NamingConventions;
 namespace EmuSync.Services.LudusaviImporter;
 
 public class LudusaviManifestImporter(
-    ILocalDataAccessor localDataAccessor
-) : ILudusaviManifestImporter, IDisposable
+    ILocalDataAccessor localDataAccessor,
+    HttpClient httpClient
+) : ILudusaviManifestImporter
 {
     private readonly ILocalDataAccessor _localDataAccessor = localDataAccessor;
 
     private const string MANIFEST_URL = "https://raw.githubusercontent.com/mtkennerly/ludusavi-manifest/refs/heads/master/data/manifest.yaml";
 
-    private readonly HttpClient _http = new();
+    private readonly HttpClient _http = httpClient;
+
+    private static readonly IDeserializer _deserializer =
+        new DeserializerBuilder()
+            .WithNamingConvention(CamelCaseNamingConvention.Instance)
+            .Build();
 
     public async Task<GameDefinitions?> GetManifestAsync(CancellationToken cancellationToken = default)
     {
@@ -36,14 +42,14 @@ public class LudusaviManifestImporter(
     {
         string lastEtag = await GetLatestEtagAsync(cancellationToken);
 
-        var request = new HttpRequestMessage(HttpMethod.Get, MANIFEST_URL);
+        using var request = new HttpRequestMessage(HttpMethod.Get, MANIFEST_URL);
 
         if (!string.IsNullOrWhiteSpace(lastEtag))
         {
             request.Headers.IfNoneMatch.Add(new EntityTagHeaderValue(lastEtag));
         }
 
-        var response = await _http.SendAsync(request, cancellationToken);
+        using var response = await _http.SendAsync(request, cancellationToken);
 
         if (response.StatusCode == HttpStatusCode.NotModified)
         {
@@ -54,13 +60,10 @@ public class LudusaviManifestImporter(
 
         string? latestEtag = response.Headers.ETag?.Tag;
 
-        var yaml = await response.Content.ReadAsStringAsync(cancellationToken);
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+        using var reader = new StreamReader(stream);
 
-        var deserializer = new DeserializerBuilder()
-            .WithNamingConvention(CamelCaseNamingConvention.Instance)
-            .Build();
-
-        var data = deserializer.Deserialize<Dictionary<string, GameDefinition>>(yaml);
+        var data = _deserializer.Deserialize<Dictionary<string, GameDefinition>>(reader);
 
         var definitions = new GameDefinitions()
         {
@@ -103,42 +106,6 @@ public class LudusaviManifestImporter(
     {
         return _localDataAccessor.GetLocalFilePath(DomainConstants.LocalDataLudusaviManifestFile);
     }
-
-    #region Dispose
-
-    private bool _disposedValue;
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!_disposedValue)
-        {
-            if (disposing)
-            {
-                // TODO: dispose managed state (managed objects)
-                _http.Dispose();
-            }
-
-            // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-            // TODO: set large fields to null
-            _disposedValue = true;
-        }
-    }
-
-    // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-    // ~LudusaviManifestImporter()
-    // {
-    //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-    //     Dispose(disposing: false);
-    // }
-
-    public void Dispose()
-    {
-        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        Dispose(disposing: true);
-        GC.SuppressFinalize(this);
-    }
-
-    #endregion Dispose
 }
 
 public record LatestManifestResponse(

@@ -8,9 +8,11 @@ namespace EmuSync.Services.Storage.OneDrive;
 
 public class MicrosoftAuthHandler(
     IOptions<OneDriveStorageProviderConfig> options,
-    ILocalDataAccessor localDataAccessor
+    ILocalDataAccessor localDataAccessor,
+    HttpClient httpClient
 )
 {
+    private readonly HttpClient _httpClient = httpClient;
     private readonly OneDriveStorageProviderConfig _options = options.Value;
     private readonly ILocalDataAccessor _localDataAccessor = localDataAccessor;
 
@@ -39,8 +41,6 @@ public class MicrosoftAuthHandler(
 
     public async Task SaveCodeAsync(string code, CancellationToken cancellationToken = default)
     {
-        using var client = new HttpClient();
-
         var body = new FormUrlEncodedContent(new[]
         {
             new KeyValuePair<string,string>("client_id", _options.ClientId),
@@ -51,7 +51,7 @@ public class MicrosoftAuthHandler(
             //new KeyValuePair<string,string>("client_secret", _options.ClientSecret)
         });
 
-        var response = await client.PostAsync($"https://login.microsoftonline.com/common/oauth2/v2.0/token", body, cancellationToken);
+        using var response = await _httpClient.PostAsync($"https://login.microsoftonline.com/common/oauth2/v2.0/token", body, cancellationToken);
         response.EnsureSuccessStatusCode();
 
         var json = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -82,8 +82,6 @@ public class MicrosoftAuthHandler(
 
     public async Task<OneDriveToken> RefreshTokenAsync(OneDriveToken token, CancellationToken cancellationToken = default)
     {
-        using var client = new HttpClient();
-
         var body = new FormUrlEncodedContent(new[]
         {
         new KeyValuePair<string,string>("client_id", _options.ClientId),
@@ -92,7 +90,7 @@ public class MicrosoftAuthHandler(
         new KeyValuePair<string,string>("grant_type", "refresh_token"),
     });
 
-        var response = await client.PostAsync("https://login.microsoftonline.com/common/oauth2/v2.0/token", body, cancellationToken);
+        using var response = await _httpClient.PostAsync("https://login.microsoftonline.com/common/oauth2/v2.0/token", body, cancellationToken);
         response.EnsureSuccessStatusCode();
 
         var json = await response.Content.ReadAsStringAsync(cancellationToken);

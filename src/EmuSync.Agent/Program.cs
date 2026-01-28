@@ -135,34 +135,36 @@ public class Program
 
         #endregion
 
-        builder.Services.AddSingleton<ISyncTasks, SyncTasks>();
-        builder.Services.AddSingleton<ISyncProgressTracker, SyncProgressTracker>();
 
-        builder.Services.AddSingleton<IApiCache, ApiCache>();
-        builder.Services.AddSingleton<IGameSyncStatusCache, GameSyncStatusCache>();
+        services.AddSingleton<ISyncTasks, SyncTasks>();
+        services.AddSingleton<ISyncProgressTracker, SyncProgressTracker>();
 
-        builder.Services.AddSingleton<ILudusaviManifestImporter, LudusaviManifestImporter>();
-        builder.Services.AddSingleton<ILudusaviManifestScanner, LudusaviManifestScanner>();
+        services.AddSingleton<IApiCache, ApiCache>();
+        services.AddSingleton<IGameSyncStatusCache, GameSyncStatusCache>();
 
-        builder.Services.AddScoped<IGameSyncService, GameSyncService>();
-        builder.Services.AddScoped<ISyncTaskProcessor, SyncTaskProcessor>();
+        services.AddHttpClient<ILudusaviManifestImporter, LudusaviManifestImporter>();
+        services.AddSingleton<ILudusaviManifestImporter, LudusaviManifestImporter>();
+        services.AddSingleton<ILudusaviManifestScanner, LudusaviManifestScanner>();
+
+        services.AddScoped<IGameSyncService, GameSyncService>();
+        services.AddScoped<ISyncTaskProcessor, SyncTaskProcessor>();
 
         services.Configure<GameSyncWorkerConfig>(
             config.GetSection(GameSyncWorkerConfig.Section)
         );
 
-        builder.Services.AddHostedService<GameSyncWorker>();
-        builder.Services.AddHostedService<SyncTaskWorker>();
-        builder.Services.AddHostedService<LudusaviManifestWorker>();
+        services.AddHostedService<GameSyncWorker>();
+        services.AddHostedService<SyncTaskWorker>();
+        services.AddHostedService<LudusaviManifestWorker>();
 
 
         services.AddValidatorsFromAssemblyContaining<ErrorResponseDto>();
-        builder.Services.AddScoped<IValidationService, FluentValidationService>();
+        services.AddScoped<IValidationService, FluentValidationService>();
 
-        builder.Services.AddLocalDataAccessor(config);
-        builder.Services.AddAllManagers(config);
+        services.AddLocalDataAccessor(config);
+        services.AddAllManagers(config);
 
-        builder.Services.AddAllExternalStorageProviders(config);
+        services.AddAllExternalStorageProviders(config);
     }
 
     private static void ConfigurePipeline(WebApplication app)

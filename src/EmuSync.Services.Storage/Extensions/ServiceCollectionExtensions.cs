@@ -30,13 +30,15 @@ public static class ServiceCollectionExtensions
     /// <param name="config"></param>
     public static void AddGoogleDriveStorageProvider(this IServiceCollection services, IConfiguration config)
     {
+        services.AddHttpClient<GoogleAuthHandler>();
+
         services.AddSingleton<GoogleDriveStorageProviderCache>();
 
         services.Configure<GoogleDriveStorageProviderConfig>(
             config.GetSection(GoogleDriveStorageProviderConfig.Section)
         );
 
-        services.AddScoped<GoogleDriveStorageProvider>();
+        services.AddSingleton<GoogleDriveStorageProvider>();
         services.AddSingleton<GoogleAuthHandler>();
     }
 
@@ -47,11 +49,13 @@ public static class ServiceCollectionExtensions
     /// <param name="config"></param>
     public static void AddDropboxStorageProvider(this IServiceCollection services, IConfiguration config)
     {
+        services.AddHttpClient<DropboxAuthHandler>();
+
         services.Configure<DropboxStorageProviderConfig>(
             config.GetSection(DropboxStorageProviderConfig.Section)
         );
 
-        services.AddScoped<DropboxStorageProvider>();
+        services.AddSingleton<DropboxStorageProvider>();
         services.AddSingleton<DropboxAuthHandler>();
     }
 
@@ -62,11 +66,18 @@ public static class ServiceCollectionExtensions
     /// <param name="config"></param>
     public static void AddOneDriveStorageProvider(this IServiceCollection services, IConfiguration config)
     {
+        services.AddHttpClient<MicrosoftAuthHandler>();
+
         services.Configure<OneDriveStorageProviderConfig>(
             config.GetSection(OneDriveStorageProviderConfig.Section)
         );
 
-        services.AddScoped<OneDriveStorageProvider>();
+        services.AddHttpClient<OneDriveStorageProvider>(config =>
+        {
+            config.Timeout = Timeout.InfiniteTimeSpan;
+        });
+
+        services.AddSingleton<OneDriveStorageProvider>();
         services.AddSingleton<MicrosoftAuthHandler>();
     }
 }

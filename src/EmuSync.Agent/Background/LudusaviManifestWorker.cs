@@ -1,16 +1,19 @@
-﻿using EmuSync.Services.LudusaviImporter;
+﻿using EmuSync.Domain;
+using EmuSync.Domain.Services.Interfaces;
+using EmuSync.Services.LudusaviImporter;
 using EmuSync.Services.LudusaviImporter.Interfaces;
 
 namespace EmuSync.Agent.Background;
 
 public class LudusaviManifestWorker(
     ILogger<LudusaviManifestWorker> logger,
+    ILocalDataAccessor localDataAccessor,
     ILudusaviManifestImporter manifestImporter,
     ILudusaviManifestScanner manifestScanner
 ) : BackgroundService
 {
     private readonly ILogger<LudusaviManifestWorker> _logger = logger;
-    //private readonly IServiceProvider _serviceProvider = serviceProvider;
+    private readonly ILocalDataAccessor _localDataAccessor = localDataAccessor;
     private readonly ILudusaviManifestImporter _manifestImporter = manifestImporter;
     private readonly ILudusaviManifestScanner _manifestScanner = manifestScanner;
     private static DateTime _nextRunTime = DateTime.MinValue;
@@ -42,33 +45,52 @@ public class LudusaviManifestWorker(
                 TimeSpan delay = TimeSpan.FromHours(6);
                 _nextRunTime = now.Add(delay);
 
-                _logger.LogDebug("Checking for new Ludusavi manifest. Next run time is {runTime}", _nextRunTime);
-
-                try
-                {
-                    GameDefinitions? gameDefinitions = await _manifestImporter.GetManifestAsync(cancellationToken);
-
-                    if (gameDefinitions != null)
-                    {
-                        var result = await _manifestScanner.ScanForSaveFilesAsync(gameDefinitions, cancellationToken);
-
-                        _countOfGamesFound = result.FoundGames.Count;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error caught in LudusaviManifestWorker");
-                }
-                finally
-                {
-                    _lastScanTime = DateTime.UtcNow;
-                    _scanInProgress = false;
-                }
+                await TryGetGameSuggestionsAsync(cancellationToken);
+                await TrySetGameCountAsync(cancellationToken);
             }
 
             await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
         }
 
+    }
+
+    private async Task TryGetGameSuggestionsAsync(CancellationToken cancellationToken)
+    {
+        _logger.LogDebug("Checking for new Ludusavi manifest. Next run time is {runTime}", _nextRunTime);
+
+        try
+        {
+            var gameDefinitions = await _manifestImporter.GetManifestAsync(cancellationToken);
+
+            if (gameDefinitions != null)
+            {
+                var result = await _manifestScanner.ScanForSaveFilesAsync(gameDefinitions, cancellationToken);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error caught in LudusaviManifestWorker");
+        }
+        finally
+        {
+            _lastScanTime = DateTime.UtcNow;
+            _scanInProgress = false;
+        }
+    }
+
+    private async Task TrySetGameCountAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            string fileName = _localDataAccessor.GetLocalFilePath(DomainConstants.LocalDataLudusaviCachedScanFile);
+            var suggestionsResult = await _localDataAccessor.ReadFileContentsOrDefaultAsync<LatestManifestScanResult>(fileName, cancellationToken);
+
+            _countOfGamesFound = suggestionsResult?.FoundGames.Count ?? 0;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to set game suggestion count");
+        }
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)
