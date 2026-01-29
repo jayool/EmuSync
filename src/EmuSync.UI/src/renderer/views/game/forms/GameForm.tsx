@@ -10,22 +10,21 @@ import { allSyncSourcesAtom } from "@/renderer/state/all-sync-sources";
 import { localSyncSourceAtom } from "@/renderer/state/local-sync-source";
 import { BaseFormProps as BaseEditFormProps, CreateGame, Game, GameSuggestion, GameSummary, UpdateGame } from "@/renderer/types";
 import { defaultCreateGame, defaultUpdateGame, replacePathDelims, transformCreateGame, transformUpdateGame } from "@/renderer/views/game/utils/game-utils";
-import { Button, Divider, Paper, Typography } from "@mui/material";
+import { Box, Button, Chip, Divider, Paper, Typography } from "@mui/material";
 import { UseQueryResult } from "@tanstack/react-query";
 import { useAtom } from "jotai";
 import { useCallback } from "react";
-import { Controller, useWatch } from "react-hook-form";
+import { Controller } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
 import WarningAlert from "@/renderer/components/alerts/WarningAlert";
 import DefaultCheckbox from "@/renderer/components/inputs/DefaultCheckbox";
 import DefaultTextField from "@/renderer/components/inputs/DefaultTextField";
 import GameSuggestionAutocomplete from "@/renderer/components/inputs/GameSuggestionAutocomplete";
+import Section from "@/renderer/components/Section";
 import CheckboxSkeleton from "@/renderer/components/skeleton/CheckboxSkeleton";
 import SaveButtonSkeleton from "@/renderer/components/skeleton/SaveButtonSkeleton";
 import TextFieldSkeleton from "@/renderer/components/skeleton/TextFieldSkeleton";
-import { OsPlatform } from "@/renderer/types/enums";
-import Section from "@/renderer/components/Section";
 
 type GameFormCreateProps = BaseEditFormProps<CreateGame, GameSummary> & {
     isEdit: false;
@@ -37,12 +36,13 @@ type GameFormEditProps = BaseEditFormProps<UpdateGame, void> & {
 
 type GameFormProps = (GameFormCreateProps | GameFormEditProps) & {
     query: UseQueryResult<Game>;
+    gameId?: string;
 };
 
 const Icon = routes.game.icon;
 
 export default function GameForm({
-    isEdit, query,
+    isEdit, query, gameId,
     saveMutation
 }: GameFormProps) {
 
@@ -114,6 +114,12 @@ export default function GameForm({
             title="Game details"
             icon={<Icon />}
             sectionIsDirty={formState.isDirty}
+            endAdornment={
+                <Chip
+                    label={`Game ID: ${gameId}`}
+                    size="small"
+                />
+            }
         />
 
         <LoadingHarness

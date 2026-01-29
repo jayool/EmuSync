@@ -30,6 +30,9 @@ public class GameSyncWorker(
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
+        //add a bit of initial delay - gives the system time to settle after startup
+        await Task.Delay(TimeSpan.FromSeconds(30), cancellationToken);
+
         while (!cancellationToken.IsCancellationRequested)
         {
             DateTime now = DateTime.UtcNow;

@@ -49,6 +49,7 @@ export default function GameEditScreen() {
                     isEdit
                     query={query}
                     saveMutation={updateMutation}
+                    gameId={id}
                 />
 
                 <SyncStatusForm

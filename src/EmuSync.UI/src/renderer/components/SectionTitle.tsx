@@ -1,18 +1,19 @@
-import HorizontalStack from "@/renderer/components/stacks/HorizontalStack";
-import { Chip, Typography } from "@mui/material";
-import WarningIcon from '@mui/icons-material/Warning';
 import WarningAlert from "@/renderer/components/alerts/WarningAlert";
+import HorizontalStack from "@/renderer/components/stacks/HorizontalStack";
+import { Box, Typography } from "@mui/material";
 
 interface SectionTitleProps {
     title: string;
     icon?: React.ReactNode;
     sectionIsDirty?: boolean;
+    endAdornment?: React.ReactNode;
 }
 
 export default function SectionTitle({
-    title, icon, sectionIsDirty
+    title, icon, sectionIsDirty,
+    endAdornment
 }: SectionTitleProps) {
-    return <HorizontalStack sx={{height: 40}}>
+    return <HorizontalStack sx={{ height: 40 }}>
         {
             typeof icon !== "undefined" &&
             <>
@@ -23,15 +24,24 @@ export default function SectionTitle({
             {title}
         </Typography>
         {
-            sectionIsDirty &&
-            <WarningAlert
-                sx={{
-                    ml: "auto",
-                    p: 0,
-                    px: 1,
-                }}
-                content="You have unsaved changes"
-            />
+            sectionIsDirty ?
+                <WarningAlert
+                    sx={{
+                        ml: "auto",
+                        p: 0,
+                        px: 1,
+                    }}
+                    content="You have unsaved changes"
+                />
+                :
+                <Box
+
+                    sx={{
+                        ml: "auto",
+                    }}
+                >
+                    {endAdornment}
+                </Box>
         }
     </HorizontalStack>
 }

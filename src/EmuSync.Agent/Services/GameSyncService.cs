@@ -45,6 +45,8 @@ public class GameSyncService(
             //this device no longer exists in the storage provider? It's probably been removed from another device
             if (externalSyncSource == null)
             {
+                _logger.LogWarning("No external sync source exists - unlinking on this device");
+
                 await HandleRemovedDeviceAsync(syncSource, cancellationToken);
                 return;
             }

@@ -86,3 +86,15 @@ This is the same release as 1.0.2, but with a fix for Windows not correctly iden
 - Updated EmuSync agent from .NET 8 to .NET 10
     - Nothing is functionally different here, but there is likely to be some minor performance gains and less memory usage overall
 - Fixed a couple of typos
+
+# v1.0.9
+
+Apologies for another update so soon after the last one, but this is a patch for Dropbox users:
+
+- Hopefully fixed an issue where Dropbox users would have to relink the storage provider after a computer restart by adding a small delay before AutoSync kicks in.
+    - I didn't personally have issues with the other storage providers, but if you had to keep relinking the other providers after a restart, this should hopefully fix that.
+
+Other changes:
+
+- Added a small delay before the game detection service kicks in.
+- Added the game ID into the game edit screen.
