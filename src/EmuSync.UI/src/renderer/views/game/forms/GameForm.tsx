@@ -115,10 +115,13 @@ export default function GameForm({
             icon={<Icon />}
             sectionIsDirty={formState.isDirty}
             endAdornment={
-                <Chip
-                    label={`Game ID: ${gameId}`}
-                    size="small"
-                />
+                gameId ?
+                    <Chip
+                        label={`Game ID: ${gameId}`}
+                        size="small"
+                    />
+                    :
+                    undefined
             }
         />
 
