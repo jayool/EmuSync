@@ -333,10 +333,8 @@ public class GoogleDriveStorageProvider(
         await request.DownloadAsync(memoryStream, cancellationToken);
 
         memoryStream.Position = 0;
-        using var reader = new StreamReader(memoryStream, Encoding.UTF8);
-        string json = await reader.ReadToEndAsync(cancellationToken);
 
-        return JsonSerializer.Deserialize<T>(json)!;
+        return (await JsonSerializer.DeserializeAsync<T>(memoryStream, cancellationToken: cancellationToken))!;
     }
 
     /// <summary>

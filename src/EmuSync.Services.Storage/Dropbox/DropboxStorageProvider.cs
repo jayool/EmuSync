@@ -20,15 +20,7 @@ public class DropboxStorageProvider(
     public async Task<TData?> GetJsonFileAsync<TData>(string fileName, CancellationToken cancellationToken = default)
     {
         string fullFilePath = GetFullFilePath(fileName);
-
-        try
-        {
-            return await GetJsonFileContentsAsync<TData>(fullFilePath, cancellationToken);
-        }
-        catch (Exception)
-        {
-            throw;
-        }
+        return await GetJsonFileContentsAsync<TData>(fullFilePath, cancellationToken);
     }
 
     public async Task GetZipFileAsync(string fileName, string writeToPath, Action<double>? onProgress = null, CancellationToken cancellationToken = default)
@@ -49,7 +41,7 @@ public class DropboxStorageProvider(
         catch (ApiException<DeleteError> ex)
         {
             //if the item wasn't found, that's fine, otherwise throw the error
-            if (!ex.Message.Contains("path_lookup/not_found"))
+            if (!ex.Message.Contains("/not_found"))
             {
                 throw;
             }
@@ -159,19 +151,28 @@ public class DropboxStorageProvider(
     {
         var client = await GetDropboxClientAsync(cancellationToken);
 
-        string json;
-
         try
         {
             using var response = await client.Files.DownloadAsync(filePath);
-            json = await response.GetContentAsStringAsync();
+            using var json = await response.GetContentAsStreamAsync();
+            return await JsonSerializer.DeserializeAsync<T>(json, cancellationToken: cancellationToken)!;
+        }
+        catch (ApiException<DownloadError> downloadError)
+        {
+            //if the item wasn't found, that's fine, otherwise throw the error
+            if (!downloadError.Message.Contains("/not_found"))
+            {
+                throw;
+            }
+
+            return default;
         }
         catch (Exception)
         {
-            return default;
+            //throw everything else
+            throw;
         }
 
-        return JsonSerializer.Deserialize<T>(json)!;
     }
 
     /// <summary>

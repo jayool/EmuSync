@@ -37,8 +37,8 @@ public class OneDriveStorageProvider(
 
         if (!response.IsSuccessStatusCode) return default;
 
-        string content = await response.Content.ReadAsStringAsync(cancellationToken);
-        return JsonSerializer.Deserialize<TData>(content);
+        using var content = await response.Content.ReadAsStreamAsync(cancellationToken);
+        return await JsonSerializer.DeserializeAsync<TData>(content, cancellationToken: cancellationToken);
     }
 
     public async Task GetZipFileAsync(string fileName, string writeToPath, Action<double>? onProgress = null, CancellationToken cancellationToken = default)
