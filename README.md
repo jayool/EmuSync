@@ -41,6 +41,8 @@ Confirmed working devices (but not limited to):
 - Local backup & restore mechanism.
 - A Decky plugin for SteamDeck users so you can check on the status of your game syncs without having to hop into desktop mode.
     - [EmuSync-DeckyPlugin](https://github.com/emu-sync/EmuSync-DeckyPlugin)
+- An API to interact with EmuSync via automation or third-party tools.
+    - For documentation, see the [wiki](https://github.com/emu-sync/EmuSync/wiki/API-overview)
 
 ## 🛠️ Installation
 
