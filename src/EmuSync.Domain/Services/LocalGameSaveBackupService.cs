@@ -60,6 +60,32 @@ public class LocalGameSaveBackupService(
         ZipHelper.ExtractToDirectory(fileStream, outputDirectory, DateTime.UtcNow);
     }
 
+    public async Task DeleteBackupAsync(string gameId, string backupId, CancellationToken cancellationToken = default)
+    {
+        List<LocalGameBackupManifestEntity>? manifests = await GetBackupManifestAsync(gameId, cancellationToken);
+        LocalGameBackupManifestEntity? manifest = manifests?.FirstOrDefault(x => x.Id == backupId);
+
+        if (manifest == null)
+        {
+            _logger.LogError("No backup manifest found for game {gameId}, backup ID {backupId}", gameId, backupId);
+            throw new InvalidOperationException($"No backup manifest found for game {gameId}, backup ID {backupId}");
+        }
+
+        string fullBackupLocation = GetGameBackupFileName(gameId, manifest.BackupFileName);
+
+        if (!File.Exists(fullBackupLocation))
+        {
+            _logger.LogError("Backup file didn't exist at {fileLocation}", fullBackupLocation);
+            throw new FileNotFoundException("Failed to find backup file", fullBackupLocation);
+        }
+
+        File.Delete(fullBackupLocation);
+
+        manifests!.Remove(manifest);
+        string manifestFile = GetGameBackupManifestFileName(gameId);
+        await _localDataAccessor.WriteFileContentsAsync(manifestFile, manifests, cancellationToken);
+    }
+
     private async Task AddBackupToManifestAsync(string gameId, string fileName, DateTime createdOnUtc, CancellationToken cancellationToken = default)
     {
         List<LocalGameBackupManifestEntity>? manifests = await GetBackupManifestAsync(gameId, cancellationToken);
