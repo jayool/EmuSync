@@ -6,6 +6,7 @@ using EmuSync.Services.Storage.Dropbox;
 using EmuSync.Services.Storage.GoogleDrive;
 using EmuSync.Services.Storage.Interfaces;
 using EmuSync.Services.Storage.OneDrive;
+using EmuSync.Services.Storage.SharedFolder;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace EmuSync.Services.Storage;
@@ -27,6 +28,7 @@ public class StorageProviderFactory(
             StorageProvider.GoogleDrive => scope.ServiceProvider.GetRequiredService<GoogleDriveStorageProvider>(),
             StorageProvider.Dropbox => scope.ServiceProvider.GetRequiredService<DropboxStorageProvider>(),
             StorageProvider.OneDrive => scope.ServiceProvider.GetRequiredService<OneDriveStorageProvider>(),
+            StorageProvider.SharedFolder => scope.ServiceProvider.GetRequiredService<SharedFolderStorageProvider>(),
             _ => throw new NotImplementedException("Unknown storage provider"),
         };
     }
@@ -48,6 +50,7 @@ public class StorageProviderFactory(
             StorageProvider.GoogleDrive => scope.ServiceProvider.GetRequiredService<GoogleDriveStorageProvider>(),
             StorageProvider.Dropbox => scope.ServiceProvider.GetRequiredService<DropboxStorageProvider>(),
             StorageProvider.OneDrive => scope.ServiceProvider.GetRequiredService<OneDriveStorageProvider>(),
+            StorageProvider.SharedFolder => scope.ServiceProvider.GetRequiredService<SharedFolderStorageProvider>(),
             _ => null,
         };
     }

@@ -2,6 +2,7 @@ export enum StorageProvider {
     GoogleDrive = 1,
     Dropbox = 2,
     OneDrive = 3,
+    SharedFolder = 4,
 }
 
 export enum OsPlatform {

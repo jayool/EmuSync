@@ -20,13 +20,59 @@ public class DropboxStorageProvider(
     public async Task<TData?> GetJsonFileAsync<TData>(string fileName, CancellationToken cancellationToken = default)
     {
         string fullFilePath = GetFullFilePath(fileName);
-        return await GetJsonFileContentsAsync<TData>(fullFilePath, cancellationToken);
+        var client = await GetDropboxClientAsync(cancellationToken);
+
+        try
+        {
+            using var response = await client.Files.DownloadAsync(fullFilePath);
+            using var json = await response.GetContentAsStreamAsync();
+            return await JsonSerializer.DeserializeAsync<TData>(json, cancellationToken: cancellationToken)!;
+        }
+        catch (ApiException<DownloadError> downloadError)
+        {
+            //if the item wasn't found, that's fine, otherwise throw the error
+            if (!downloadError.Message.Contains("/not_found"))
+            {
+                throw;
+            }
+
+            return default;
+        }
+        catch (Exception)
+        {
+            //throw everything else
+            throw;
+        }
     }
 
     public async Task GetZipFileAsync(string fileName, string writeToPath, Action<double>? onProgress = null, CancellationToken cancellationToken = default)
     {
         string fullFilePath = GetFullFilePath(fileName);
-        await CreateLocalZipFile(fullFilePath, writeToPath, onProgress, cancellationToken);
+
+        string path = Path.GetDirectoryName(writeToPath)!;
+
+        if (!Path.Exists(path))
+        {
+            Directory.CreateDirectory(path);
+        }
+
+        var client = await GetDropboxClientAsync(cancellationToken);
+        using var response = await client.Files.DownloadAsync(fullFilePath);
+
+        var totalSize = response.Response.Size;
+
+        using var stream = await response.GetContentAsStreamAsync();
+        using var fileStream = new FileStream(writeToPath, FileMode.CreateNew, FileAccess.Write);
+        using var progressStream = new ProgressStream(fileStream, onProgress, totalSize);
+
+        //copy the content in chunks, reporting progress
+        byte[] buffer = new byte[81920]; // 80KB
+        int bytesRead;
+
+        while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) > 0)
+        {
+            await progressStream.WriteAsync(buffer, 0, bytesRead, cancellationToken);
+        }
     }
 
     public async Task DeleteFileAsync(string fileName, CancellationToken cancellationToken = default)
@@ -58,12 +104,7 @@ public class DropboxStorageProvider(
     {
         string fullFilePath = GetFullFilePath(fileName);
 
-        string jsonContent = JsonSerializer.Serialize(data, new JsonSerializerOptions
-        {
-            WriteIndented = false
-        });
-
-        byte[] bytes = Encoding.UTF8.GetBytes(jsonContent);
+        byte[] bytes = JsonSerializer.SerializeToUtf8Bytes(data, new JsonSerializerOptions { WriteIndented = false });
 
         using var stream = new MemoryStream(bytes);
         using var progressStream = new ProgressStream(stream, onProgress);
@@ -138,76 +179,6 @@ public class DropboxStorageProvider(
             new CommitInfo(fileName, mode: WriteMode.Overwrite.Instance),
             body: progressStream
         );
-    }
-
-    /// <summary>
-    /// Gets a JSON file contents
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="filePath"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    private async Task<T?> GetJsonFileContentsAsync<T>(string filePath, CancellationToken cancellationToken = default)
-    {
-        var client = await GetDropboxClientAsync(cancellationToken);
-
-        try
-        {
-            using var response = await client.Files.DownloadAsync(filePath);
-            using var json = await response.GetContentAsStreamAsync();
-            return await JsonSerializer.DeserializeAsync<T>(json, cancellationToken: cancellationToken)!;
-        }
-        catch (ApiException<DownloadError> downloadError)
-        {
-            //if the item wasn't found, that's fine, otherwise throw the error
-            if (!downloadError.Message.Contains("/not_found"))
-            {
-                throw;
-            }
-
-            return default;
-        }
-        catch (Exception)
-        {
-            //throw everything else
-            throw;
-        }
-
-    }
-
-    /// <summary>
-    /// Gets a zip file contents
-    /// </summary>
-    /// <param name="filePath"></param>
-    /// <param name="writeToPath"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    private async Task CreateLocalZipFile(string filePath, string writeToPath, Action<double>? onProgress = null, CancellationToken cancellationToken = default)
-    {
-        string path = Path.GetDirectoryName(writeToPath)!;
-
-        if (!Path.Exists(path))
-        {
-            Directory.CreateDirectory(path);
-        }
-
-        var client = await GetDropboxClientAsync(cancellationToken);
-        using var response = await client.Files.DownloadAsync(filePath);
-
-        var totalSize = response.Response.Size;
-
-        using var stream = await response.GetContentAsStreamAsync();
-        using var fileStream = new FileStream(writeToPath, FileMode.CreateNew, FileAccess.Write);
-        using var progressStream = new ProgressStream(fileStream, onProgress, totalSize);
-
-        //copy the content in chunks, reporting progress
-        byte[] buffer = new byte[81920]; // 80KB
-        int bytesRead;
-
-        while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) > 0)
-        {
-            await progressStream.WriteAsync(buffer, 0, bytesRead, cancellationToken);
-        }
     }
 
     /// <summary>

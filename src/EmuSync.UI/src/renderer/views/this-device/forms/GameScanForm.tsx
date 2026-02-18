@@ -1,19 +1,18 @@
 import { cacheKeys } from "@/renderer/api/cache-keys";
 import { forceGameScan, getGameScanDetails } from "@/renderer/api/sync-source-api";
-import VerticalStack from "@/renderer/components/stacks/VerticalStack";
-import { Button, CircularProgress, LinearProgress, Paper, Typography } from "@mui/material";
+import { Button, CircularProgress, Paper, Typography } from "@mui/material";
 
+import ExternalLinkButton from "@/renderer/components/buttons/ExternalLinkButton";
+import TimeAgo from "@/renderer/components/dates/TimeAgo";
 import LoadingHarness from "@/renderer/components/harnesses/LoadingHarness";
+import { Pre } from "@/renderer/components/Pre";
+import Section from "@/renderer/components/Section";
 import SectionTitle from "@/renderer/components/SectionTitle";
 import HorizontalStack from "@/renderer/components/stacks/HorizontalStack";
 import useEditQuery from "@/renderer/hooks/use-edit-query";
+import LinearProgressWithLabel from "@/renderer/views/this-device/components/LinearProgressWithLabel";
 import RadarIcon from '@mui/icons-material/Radar';
 import { useCallback, useEffect } from "react";
-import TimeAgo from "@/renderer/components/dates/TimeAgo";
-import LinearProgressWithLabel from "@/renderer/views/this-device/components/LinearProgressWithLabel";
-import ExternalLinkButton from "@/renderer/components/buttons/ExternalLinkButton";
-import { Pre } from "@/renderer/components/Pre";
-import Section from "@/renderer/components/Section";
 
 export default function GameScanForm() {
 
@@ -92,7 +91,7 @@ export default function GameScanForm() {
                                 loading={updateMutation.isPending}
                                 onClick={handleMutation}
                                 sx={{
-                                    minWidth: 100
+                                    minWidth: 110
                                 }}
                             >
                                 Scan now

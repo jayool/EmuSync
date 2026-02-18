@@ -12,9 +12,11 @@ import StorageProviderSelector from "@/renderer/views/this-device/components/Sto
 import BackupIcon from '@mui/icons-material/Backup';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Section from "@/renderer/components/Section";
+import useAlerts from "@/renderer/hooks/use-alerts";
 
 export default function StorageProviderForm() {
 
+    const {successAlert} = useAlerts();
     const queryClient = useQueryClient();
 
     const query = useQuery({
@@ -30,6 +32,7 @@ export default function StorageProviderForm() {
 
         query.refetch();
 
+        successAlert("Successfully connected to storage provider");
     }, []);
 
     return <Section>

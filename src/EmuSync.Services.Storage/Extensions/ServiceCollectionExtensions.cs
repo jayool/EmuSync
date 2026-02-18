@@ -2,6 +2,7 @@
 using EmuSync.Services.Storage.GoogleDrive;
 using EmuSync.Services.Storage.Interfaces;
 using EmuSync.Services.Storage.OneDrive;
+using EmuSync.Services.Storage.SharedFolder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -21,6 +22,7 @@ public static class ServiceCollectionExtensions
         services.AddGoogleDriveStorageProvider(config);
         services.AddDropboxStorageProvider(config);
         services.AddOneDriveStorageProvider(config);
+        services.AddSharedFolderStorageProvider(config);
     }
 
     /// <summary>
@@ -79,5 +81,16 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton<OneDriveStorageProvider>();
         services.AddSingleton<MicrosoftAuthHandler>();
+    }
+
+    /// <summary>
+    /// Registers the services and config for <see cref="OneDriveStorageProvider"/>
+    /// </summary>
+    /// <param name="services"></param>
+    /// <param name="config"></param>
+    public static void AddSharedFolderStorageProvider(this IServiceCollection services, IConfiguration config)
+    {
+        services.AddSingleton<SharedFolderStorageProvider>();
+        services.AddSingleton<SharedFolderAuthHandler>();
     }
 }

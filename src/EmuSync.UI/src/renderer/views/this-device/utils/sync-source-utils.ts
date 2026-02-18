@@ -5,6 +5,7 @@ import { StorageProvider } from "@/renderer/types/enums";
 import dropboxLogo from "@assets/images/dropbox-logo.png";
 import oneDriveLogo from "@assets/images/onedrive-logo.png";
 import googleDriveLogo from "@assets/images/google-drive-icon.webp";
+import sharedFolderLogo from "@assets/images/folder-icon.png";
 
 export const storageProviderMap = {
     [StorageProvider.GoogleDrive]: {
@@ -20,6 +21,11 @@ export const storageProviderMap = {
     [StorageProvider.OneDrive]: {
         name: "OneDrive",
         image: oneDriveLogo
+    },
+
+    [StorageProvider.SharedFolder]: {
+        name: "Shared/local folder",
+        image: sharedFolderLogo
     },
 }
 

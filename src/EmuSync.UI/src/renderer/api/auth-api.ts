@@ -1,5 +1,5 @@
-import { get } from "@/renderer/api/api-helper";
-import { DropboxAuthUrlResponse, GoogleAuthUrlResponse, MicrosoftAuthUrlResponse } from "@/renderer/types";
+import { get, postWithNoResponse } from "@/renderer/api/api-helper";
+import { DropboxAuthUrlResponse, GoogleAuthUrlResponse, MicrosoftAuthUrlResponse, SharedFolderAuthFinish } from "@/renderer/types";
 
 const controller = "Auth"
 
@@ -29,6 +29,17 @@ export async function getMicrosoftAuthUrl(): Promise<MicrosoftAuthUrlResponse> {
 
     return await get({
         path
+    });
+
+}
+
+export async function completeSharedFolderSetup(body: SharedFolderAuthFinish): Promise<void> {
+
+    const path = `${controller}/SharedFolder/AuthFinish`;
+
+    await postWithNoResponse({
+        path,
+        body
     });
 
 }
