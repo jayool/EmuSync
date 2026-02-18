@@ -24,4 +24,7 @@ public record GameDto
 
     [JsonPropertyName("storageBytes")]
     public long? StorageBytes { get; set; }
+
+    [JsonPropertyName("maximumLocalGameBackups")]
+    public int? MaximumLocalGameBackups { get; set; }
 }

@@ -255,7 +255,7 @@ public class GameSyncManager(
             _syncProgressTracker.UpdateStage(game.Id, "Creating backup");
 
             await _localGameSaveBackupService.CreateBackupAsync(
-                game.Id,
+                game,
                 path,
                 (progress) => _syncProgressTracker.UpdateStageCompletionPercent(game.Id, progress, 70, 85),
                 cancellationToken

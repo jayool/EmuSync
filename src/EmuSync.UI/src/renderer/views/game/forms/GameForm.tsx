@@ -10,10 +10,10 @@ import { allSyncSourcesAtom } from "@/renderer/state/all-sync-sources";
 import { localSyncSourceAtom } from "@/renderer/state/local-sync-source";
 import { BaseFormProps as BaseEditFormProps, CreateGame, Game, GameSuggestion, GameSummary, UpdateGame } from "@/renderer/types";
 import { defaultCreateGame, defaultUpdateGame, replacePathDelims, transformCreateGame, transformUpdateGame } from "@/renderer/views/game/utils/game-utils";
-import { Box, Button, Chip, Divider, Paper, Typography } from "@mui/material";
+import { Box, Button, Checkbox, Chip, Divider, FormControlLabel, Paper, Typography } from "@mui/material";
 import { UseQueryResult } from "@tanstack/react-query";
 import { useAtom } from "jotai";
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Controller } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
@@ -46,6 +46,19 @@ export default function GameForm({
     saveMutation
 }: GameFormProps) {
 
+    const [overrideMaximumBackups, setOverrideMaximumBackups] = useState(false);
+    const [maximumBackupsSaveValue, setMaximumBackupsSaveValue] = useState<number | null>(null);
+
+    //on first load, detect if an override is set
+    useEffect(() => {
+
+        if (query.isFetched && query.data) {
+            setOverrideMaximumBackups((query.data?.maximumLocalGameBackups ?? null) !== null);
+            setMaximumBackupsSaveValue(query.data?.maximumLocalGameBackups ?? null);
+        }
+
+    }, [query.isFetched]);
+
     const disabled = query.isFetching;
     const isSubmitting = saveMutation.isPending;
 
@@ -54,7 +67,7 @@ export default function GameForm({
     const [allSyncSources] = useAtom(allSyncSourcesAtom);
 
     const {
-        handleSubmit, control, formState, reset, setValue,
+        handleSubmit, control, formState, reset, setValue, getValues,
         watch
     } = useEditForm({
         query,
@@ -63,6 +76,22 @@ export default function GameForm({
     });
 
     const autoSyncEnabled = watch("autoSync");
+
+
+    const handleOverrideMaximumBackupCheckboxChange = useCallback((checked: boolean) => {
+        setOverrideMaximumBackups(checked);
+
+        if (checked) {
+            setValue("maximumLocalGameBackups", maximumBackupsSaveValue, { shouldDirty: true });
+        } else {
+
+            const oldValue = getValues("maximumLocalGameBackups");
+            setMaximumBackupsSaveValue(oldValue);
+
+            setValue("maximumLocalGameBackups", null, { shouldDirty: true });
+        }
+
+    }, [maximumBackupsSaveValue, getValues]);
 
     const handleFormSubmit = useCallback((data: UpdateGame | CreateGame) => {
 
@@ -158,6 +187,48 @@ export default function GameForm({
                             />
                         )}
                     />
+
+
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={overrideMaximumBackups}
+                                onChange={(e) => handleOverrideMaximumBackupCheckboxChange(e.target.checked)}
+                                disabled={disabled || isSubmitting}
+                            />
+                        }
+                        label={"Override maximum local game backups?"}
+                    />
+
+                    {
+                        overrideMaximumBackups &&
+                        <>
+
+                            <Controller
+                                name="maximumLocalGameBackups"
+                                control={control}
+                                rules={{
+                                    required: "This field is required",
+                                    min: { value: 0, message: "Must be greater than -1" },
+                                    validate: (v) => Number.isInteger(Number(v)) || "Must be a whole number"
+                                }}
+                                render={({ field, fieldState }) => (
+                                    <DefaultTextField
+                                        field={field}
+                                        fieldState={fieldState}
+                                        label="Maximum local game backups"
+                                        type="number"
+                                        disabled={disabled || isSubmitting}
+                                        placeholder="Override the maximum amount of local backups kept for this game"
+                                    />
+                                )}
+                            />
+
+                            <Divider />
+                        </>
+                    }
+
+
                     <Controller
                         name="autoSync"
                         control={control as never}
@@ -258,6 +329,9 @@ function LoadingState() {
         <TextFieldSkeleton />
         <Divider />
         <TextFieldSkeleton />
+        <CheckboxSkeleton
+            width={274}
+        />
         <CheckboxSkeleton
             width={204}
         />

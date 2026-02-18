@@ -21,6 +21,7 @@ public static class GameMapping
             LastSyncedFrom = entity.LastSyncedFrom,
             LastSyncTimeUtc = entity.LastSyncTimeUtc,
             StorageBytes = entity.StorageBytes,
+            MaximumLocalGameBackups = entity.MaximumLocalGameBackups
         };
     }
 
@@ -90,7 +91,8 @@ public static class GameMapping
             Id = id,
             Name = dto.Name,
             AutoSync = dto.AutoSync,
-            SyncSourceIdLocations = dto.SyncSourceIdLocations
+            SyncSourceIdLocations = dto.SyncSourceIdLocations,
+            MaximumLocalGameBackups = dto.MaximumLocalGameBackups
         };
     }
 }

@@ -94,6 +94,7 @@ public class GameManager(
         }
 
         foundEntity.AutoSync = entity.AutoSync;
+        foundEntity.MaximumLocalGameBackups = entity.MaximumLocalGameBackups;
 
         //add it to the games list
         await WriteToExternalList(foundEntity, ListOperation.Upsert, onProgress: null, cancellationToken);

@@ -10,6 +10,7 @@ public interface IGameDto
     string Name { get; set; }
     bool AutoSync { get; set; }
     Dictionary<string, string>? SyncSourceIdLocations { get; set; }
+    int? MaximumLocalGameBackups { get; set; }
 }
 
 /// <summary>
@@ -20,5 +21,6 @@ public class GameDtoValidator : AbstractValidator<IGameDto>
     public GameDtoValidator()
     {
         RuleFor(x => x.Name).NotEmpty().MaximumLength(255);
+        RuleFor(x => x.MaximumLocalGameBackups).GreaterThan(-1).When(x => x.MaximumLocalGameBackups != null);
     }
 }

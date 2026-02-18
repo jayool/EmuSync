@@ -23,12 +23,14 @@ export interface Game {
     lastSyncedFrom?: string | null;
     lastSyncTimeUtc?: Date | null;
     storageBytes: number;
+    maximumLocalGameBackups: number | null;
 }
 
 export interface CreateGame {
     name: string;
     autoSync: boolean;
     syncSourceIdLocations?: Record<string, string> | null;
+    maximumLocalGameBackups: number | null;
 }
 
 export interface UpdateGame {
@@ -36,6 +38,7 @@ export interface UpdateGame {
     name: string;
     autoSync: boolean;
     syncSourceIdLocations?: Record<string, string> | null;
+    maximumLocalGameBackups: number | null;
 }
 
 export interface GameBackupManifest {

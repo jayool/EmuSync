@@ -5,13 +5,15 @@ export const defaultUpdateGame: UpdateGame = {
     id: "",
     name: "",
     autoSync: false,
-    syncSourceIdLocations: null
+    syncSourceIdLocations: null,
+    maximumLocalGameBackups: null
 };
 
 export const defaultCreateGame: CreateGame = {
     name: "",
     autoSync: false,
-    syncSourceIdLocations: null
+    syncSourceIdLocations: null,
+    maximumLocalGameBackups: null
 };
 
 export function transformUpdateGame(game: Game): UpdateGame {
@@ -19,7 +21,8 @@ export function transformUpdateGame(game: Game): UpdateGame {
         id: game.id,
         autoSync: game.autoSync,
         syncSourceIdLocations: game.syncSourceIdLocations,
-        name: game.name
+        name: game.name,
+        maximumLocalGameBackups: game.maximumLocalGameBackups
     }
 }
 
