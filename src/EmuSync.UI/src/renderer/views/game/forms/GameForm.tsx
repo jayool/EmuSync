@@ -175,10 +175,12 @@ export default function GameForm({
                         name="name"
                         control={control as never}
                         rules={{
-                            required: "Name is required"
+                            required: "Name is required",
+                            maxLength: { value: 255, message: "Name must be less than 255 characters" }
                         }}
                         render={({ field, fieldState }) => (
                             <DefaultTextField
+                                required
                                 field={field}
                                 fieldState={fieldState}
                                 label="Name"
@@ -214,6 +216,7 @@ export default function GameForm({
                                 }}
                                 render={({ field, fieldState }) => (
                                     <DefaultTextField
+                                        required
                                         field={field}
                                         fieldState={fieldState}
                                         label="Maximum local game backups"

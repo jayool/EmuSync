@@ -96,6 +96,7 @@ export default function SyncSourceForm() {
                     }}
                     render={({ field, fieldState }) => (
                         <DefaultTextField
+                            required
                             field={field}
                             fieldState={fieldState}
                             label="Device name"
@@ -116,6 +117,7 @@ export default function SyncSourceForm() {
                         }}
                         render={({ field, fieldState }) => (
                             <DefaultTextField
+                                required
                                 field={field}
                                 fieldState={fieldState}
                                 label="Maximum local game backups (per game)"
@@ -146,6 +148,7 @@ export default function SyncSourceForm() {
                         }}
                         render={({ field, fieldState }) => (
                             <DefaultTextField
+                                required
                                 field={field}
                                 fieldState={fieldState}
                                 label="AutoSync frequency (in minutes)"

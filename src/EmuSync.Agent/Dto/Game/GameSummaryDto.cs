@@ -13,6 +13,12 @@ public record GameSummaryDto
     [JsonPropertyName("autoSync")]
     public bool AutoSync { get; set; }
 
+    [JsonPropertyName("maximumLocalGameBackups")]
+    public int? MaximumLocalGameBackups { get; set; }
+
+    [JsonPropertyName("syncSourceIdLocations")]
+    public Dictionary<string, string>? SyncSourceIdLocations { get; set; }
+
     [JsonPropertyName("lastSyncedFrom")]
     public string? LastSyncedFrom { get; set; }
 

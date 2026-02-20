@@ -21,13 +21,15 @@ interface ListViewDataGridProps<TData> {
     reloadFunc: () => Promise<any>;
     deleteFunc: (id: string) => Promise<any>;
     getDeleteItemDetails: (row: TData) => Promise<DeleteItemDetails>;
+    toolbarExtension?: React.ReactNode;
 }
 
 export default function ListViewDataGrid<TData>({
     columns, rows, loading, editHref,
     addButtonRedirect, addButtonItemName, hasError,
     reloadFunc,
-    deleteFunc, getDeleteItemDetails
+    deleteFunc, getDeleteItemDetails,
+    toolbarExtension
 }: ListViewDataGridProps<TData>) {
 
     const [deleteModalIsOpen, setDeleteModalIsOpen] = useState(false);
@@ -40,8 +42,9 @@ export default function ListViewDataGrid<TData>({
             loading={loading}
             reloadFunc={reloadFunc}
             hasError={hasError}
+            toolbarExtension={toolbarExtension}
         />
-    }, [addButtonRedirect, addButtonItemName, loading, reloadFunc, hasError]);
+    }, [addButtonRedirect, addButtonItemName, loading, reloadFunc, hasError, toolbarExtension]);
 
     const handleDeleteClick = useCallback(async (row: TData) => {
 

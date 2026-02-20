@@ -48,7 +48,7 @@ export const navLinks = [
         key: "general",
         links: [
             getNavLink(routes.home),
-            getNavLink(routes.game, [routes.gameEdit, routes.gameAdd]),
+            getNavLink(routes.game, [routes.gameEdit, routes.gameAdd, routes.gameQuickAdd]),
             getNavLink(routes.thisDevice),
             getNavLink(routes.allDevices),
             getNavLink(routes.localSyncHistory),

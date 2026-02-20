@@ -14,11 +14,12 @@ import { Pre } from "@/renderer/components/Pre";
 
 
 interface GameSuggestionAutocompleteProps {
+    disabled?: boolean;
     onSelect: (game: GameSuggestion, filePath: string) => void;
 };
 
 export default function GameSuggestionAutocomplete({
-    onSelect
+    disabled, onSelect
 }: GameSuggestionAutocompleteProps) {
 
     const [options, setOptions] = useState<string[] | null>(null);
@@ -41,7 +42,12 @@ export default function GameSuggestionAutocomplete({
     >
         <Autocomplete<GameSuggestion | string>
 
-            noOptionsText="Sorry, EmuSync didn't find any game saves on your device."
+            disabled={disabled}
+            noOptionsText={
+                inputValue.length > 0
+                    ? "No matching game suggestions found."
+                    : "Sorry, EmuSync didn't find any game saves on your device."
+            }
             open={open}
             onOpen={() => {
                 setOpen(true);
@@ -61,7 +67,7 @@ export default function GameSuggestionAutocomplete({
 
                 if (!value) return;
 
-                // inal path selected
+                // final path selected
                 if (typeof value === "string" && selectedGame) {
                     onSelect(selectedGame, value);
                     setOptions(null);

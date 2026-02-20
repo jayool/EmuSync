@@ -63,11 +63,12 @@ interface CustomToolbarProps {
     loading: boolean;
     hasError?: boolean;
     reloadFunc: () => Promise<any>;
+    toolbarExtension?: React.ReactNode;
 }
 
 export default function CustomToolbar({
     addButtonRedirect, itemName, loading,
-    reloadFunc, hasError
+    reloadFunc, hasError, toolbarExtension
 }: CustomToolbarProps) {
 
     const handleReloadClick = useCallback(async () => {
@@ -91,6 +92,10 @@ export default function CustomToolbar({
                         </Button>
                     </Link>
                 </Box>
+            }
+
+            {
+                toolbarExtension
             }
 
             <Box

@@ -4,11 +4,13 @@ import { ControllerFieldState, ControllerRenderProps } from "react-hook-form";
 type DefaultTextFieldProps = TextFieldProps & {
     field: ControllerRenderProps<any, any>;
     fieldState?: ControllerFieldState;
+    required?: boolean;
 };
 
 export default function DefaultTextField({
     field,
     fieldState,
+    required,
     ...props
 }: DefaultTextFieldProps) {
     return <TextField
@@ -20,6 +22,7 @@ export default function DefaultTextField({
         slotProps={{
             inputLabel: {
                 shrink: true,
+                required: required
             },
         }}
         {...props}

@@ -16,7 +16,6 @@ import useAlerts from "@/renderer/hooks/use-alerts";
 
 export default function StorageProviderForm() {
 
-    const {successAlert} = useAlerts();
     const queryClient = useQueryClient();
 
     const query = useQuery({
@@ -31,8 +30,6 @@ export default function StorageProviderForm() {
         });
 
         query.refetch();
-
-        successAlert("Successfully connected to storage provider");
     }, []);
 
     return <Section>

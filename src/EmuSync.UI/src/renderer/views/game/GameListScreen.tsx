@@ -7,7 +7,7 @@ import { DeleteItemDetails } from "@/renderer/components/modals/DeleteModal";
 import useListQuery from "@/renderer/hooks/use-list-query";
 import { routes } from "@/renderer/routes";
 import { GameSummary } from "@/renderer/types";
-import { Divider } from "@mui/material";
+import { Box, Button, Divider } from "@mui/material";
 
 import { GridColDef } from '@mui/x-data-grid';
 import { useAtom } from "jotai";
@@ -18,7 +18,8 @@ import StorageSizeChip from "@/renderer/components/chips/StorageSizeChip";
 import DisplayDate from "@/renderer/components/dates/DisplayDate";
 import { allSyncSourcesAtom } from "@/renderer/state/all-sync-sources";
 import { gameSyncStatusOptions } from "@/renderer/types/enums";
-
+import ControlPointDuplicateIcon from '@mui/icons-material/ControlPointDuplicate';
+import { Link } from "react-router-dom";
 
 export default function GameListScreen() {
 
@@ -127,6 +128,29 @@ export default function GameListScreen() {
 
     }, []);
 
+    const toolbarExtension = useMemo(() => {
+        return <Box
+            sx={{
+                borderLeft: "1px solid transparent",
+                borderColor: "divider",
+                ml: 1,
+                pl: 2,
+            }}
+        >
+            <Link to={routes.gameQuickAdd.href}>
+                <Button
+                    color="primary"
+                    size="small"
+                    startIcon={<ControlPointDuplicateIcon />}
+                    disabled={query.isFetching || resetCacheMutation.isPending}
+                >
+                    Quick add/update games
+                </Button>
+            </Link>
+        </Box>
+
+    }, [query.isFetching || resetCacheMutation.isPending]);
+
     return <AgentStatusHarness>
         <ListViewDataGrid
             columns={columns}
@@ -143,6 +167,8 @@ export default function GameListScreen() {
 
             deleteFunc={handleDelete}
             getDeleteItemDetails={getDeleteItemDeails}
+
+            toolbarExtension={toolbarExtension}
         />
     </AgentStatusHarness>
 }

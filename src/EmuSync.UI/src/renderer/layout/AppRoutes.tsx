@@ -4,6 +4,7 @@ import AllDevicesListScreen from "@/renderer/views/all-devices/AllDevicesListScr
 import GameAddScreen from "@/renderer/views/game/GameAddScreen";
 import GameEditScreen from "@/renderer/views/game/GameEditScreen";
 import GameListScreen from "@/renderer/views/game/GameListScreen";
+import GameQuickAddScreen from "@/renderer/views/game/GameQuickAddScreen";
 import HomeScreen from "@/renderer/views/home/HomeScreen";
 import LocalSyncHistoryScreen from "@/renderer/views/local-sync-history/LocalSyncHistoryScreen";
 import NotFoundScreen from "@/renderer/views/NotFoundScreen";
@@ -18,6 +19,7 @@ export default function AppRoutes() {
         <Route path={routes.localSyncHistory.href} element={<LocalSyncHistoryScreen />} />
         <Route path={routes.game.href} element={<GameListScreen />} />
 
+        <Route path={routes.gameQuickAdd.href} element={<GameQuickAddScreen />} />
         <Route path={routes.gameAdd.href} element={<GameAddScreen />} />
         <Route path={routes.gameEdit.href} element={<GameEditScreen />} />
 

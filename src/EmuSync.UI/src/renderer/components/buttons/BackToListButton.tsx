@@ -8,13 +8,15 @@ import { useAtom } from "jotai";
 interface BackToListButtonProps {
     href: string;
     disabled?: boolean;
+    disableFloat?: boolean;
+    disableMargin?: boolean;
     buttonSx?: SxProps;
 }
 
 const { sidebarMinimisedWidth, sidebarWidth, headerHeight, sidebarTransitionTime } = siteSettings.layoutProperties;
 
 export default function BackToListButton({
-    href, ...buttonProps
+    href, disableFloat, disableMargin, ...buttonProps
 }: BackToListButtonProps) {
 
     const [sidebarConfig] = useAtom(sidebarConfigAtom);
@@ -25,11 +27,11 @@ export default function BackToListButton({
         sx={{
             position: {
                 xs: "initial",
-                lg: "absolute"
+                lg: disableFloat ? "initial" : "absolute"
             },
             mb: {
-                xs: 2,
-                lg: 0
+                xs: disableMargin ? 0 :2,
+                lg: disableMargin ? 0 : disableFloat ? 2 : 0
             },
             transition: `left ${sidebarTransitionTime}`,
             left: `calc(${left} + 30px)`,

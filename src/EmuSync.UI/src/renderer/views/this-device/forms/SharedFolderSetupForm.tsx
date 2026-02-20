@@ -38,7 +38,7 @@ export default function SharedFolderSetupForm({
         return localSyncSource.platformId === OsPlatform.Windows;
     }, [localSyncSource]);
 
-    const { errorAlert } = useAlerts();
+    const { successAlert, errorAlert } = useAlerts();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const {
@@ -70,6 +70,8 @@ export default function SharedFolderSetupForm({
             await completeSharedFolderSetup(data);
             onConnected();
 
+            successAlert("Successfully connected to shared/local folder");
+
         } catch (ex) {
             console.error(ex);
             errorAlert("An error occurred saving the shared folder details. If you're using a network folder, double check the details you've entered.")
@@ -93,6 +95,7 @@ export default function SharedFolderSetupForm({
                     rules={{ required: "Path is required" }}
                     render={({ field, fieldState }) => (
                         <DefaultTextField
+                            required
                             field={field}
                             fieldState={fieldState}
                             label="Path"
@@ -113,6 +116,7 @@ export default function SharedFolderSetupForm({
                             }}
                             render={({ field, fieldState }) => (
                                 <DefaultTextField
+                                    required={!!userName || !!password}
                                     field={field}
                                     fieldState={fieldState}
                                     label="Username"
@@ -130,6 +134,8 @@ export default function SharedFolderSetupForm({
                             }}
                             render={({ field, fieldState }) => (
                                 <DefaultTextField
+
+                                    required={!!userName || !!password}
                                     field={field}
                                     fieldState={fieldState}
                                     label="Password"
