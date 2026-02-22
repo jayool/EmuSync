@@ -1,6 +1,6 @@
 import { cacheKeys } from "@/renderer/api/cache-keys";
 import { getGameBackups } from "@/renderer/api/game-api";
-import { forceDownloadGame, forceUploadGame, getGameSyncStatus, restoreGameFromBackup, syncGame } from "@/renderer/api/game-sync-api";
+import { deleteBackup, forceDownloadGame, forceUploadGame, getGameSyncStatus, restoreGameFromBackup, syncGame } from "@/renderer/api/game-sync-api";
 import ErrorAlert from "@/renderer/components/alerts/ErrorAlert";
 import WarningAlert from "@/renderer/components/alerts/WarningAlert";
 import ButtonRow from "@/renderer/components/buttons/ButtonRow";
@@ -78,6 +78,19 @@ export default function SyncStatusForm({
         errorMessage: () => `Failed to restore backup for game: ${gameName}`,
     });
 
+    const deleteBackupMutation = useMutation({
+        mutationFn: async (backupId: string) => {
+            return deleteBackup(gameId, backupId);
+        },
+        onSuccess: async (data) => {
+            queryClient.invalidateQueries({ queryKey: [gameBackupsKey] });
+            successAlert(`Successfully deleted backup for game: ${gameName}`);
+        },
+        onError: async () => {
+            errorAlert(`Failed to delete backup for game: ${gameName}`);
+        },
+    });
+
     const forceDownloadMutation = useMutation({
         mutationFn: forceDownloadGame,
         onSuccess: async (data) => {
@@ -101,6 +114,7 @@ export default function SyncStatusForm({
     });
 
     const refreshQueries = useCallback(() => {
+        queryClient.invalidateQueries({ queryKey: [cacheKeys.gameList] });
         queryClient.invalidateQueries({ queryKey: [gameSyncStatusKey] });
         queryClient.invalidateQueries({ queryKey: [gameBackupsKey] });
         queryClient.invalidateQueries({ queryKey: [gameLocalSyncLogsKey] });
@@ -113,6 +127,10 @@ export default function SyncStatusForm({
     const handleRestoreFromBackup = useCallback((backupId: string) => {
         restoreGameFromBackupMutation.mutate(backupId);
         setBackupModalIsOpen(false);
+    }, []);
+
+    const handleDeleteBackup = useCallback(async (backupId: string) => {
+        return deleteBackupMutation.mutateAsync(backupId);
     }, []);
 
     const syncState = useMemo(() => {
@@ -311,6 +329,7 @@ export default function SyncStatusForm({
                 isOpen={backupModalIsOpen}
                 setIsOpen={setBackupModalIsOpen}
                 onSelectBackup={handleRestoreFromBackup}
+                onDeleteBackup={handleDeleteBackup}
             />
         </LoadingHarness>
     </Section>

@@ -10,9 +10,11 @@ import ShowModal from "@/renderer/components/modals/ShowModal";
 import HorizontalStack from "@/renderer/components/stacks/HorizontalStack";
 
 import { getDropboxAuthUrl, getGoogleAuthUrl, getMicrosoftAuthUrl } from "@/renderer/api/auth-api";
-import StorageProviderDetails from "@/renderer/views/this-device/components/StorageProviderDetails";
-import { storageProviderMap } from "@/renderer/views/this-device/utils/sync-source-utils";
 import useAlerts from "@/renderer/hooks/use-alerts";
+import StorageProviderDetails from "@/renderer/views/this-device/components/StorageProviderDetails";
+import SharedFolderSetupForm from "@/renderer/views/this-device/forms/SharedFolderSetupForm";
+import { storageProviderMap } from "@/renderer/views/this-device/utils/sync-source-utils";
+import { Box } from "@mui/system";
 
 interface StorageProviderSelectorProps {
     onConnected: () => void;
@@ -25,6 +27,7 @@ export default function StorageProviderSelector({
     const { errorAlert } = useAlerts();
 
     const [modalIsOpen, setModalIsOpen] = useState(false);
+    const [sharedFolderModalIsOpen, setSharedFolderModalIsOpen] = useState(false);
     const [openWindow, setOpenWindow] = useState<Window | null>(null);
 
     const [dropboxIsLoading, setDropboxIsLoading] = useState(false);
@@ -108,6 +111,11 @@ export default function StorageProviderSelector({
     }, [handleSelect]);
 
 
+    const handleSelectSharedFolder = useCallback(async () => {
+        setSharedFolderModalIsOpen(true);
+    }, []);
+
+
     useEffect(() => {
         if (!openWindow) return;
 
@@ -139,7 +147,15 @@ export default function StorageProviderSelector({
                 }
             />
 
-            <HorizontalStack>
+            <Box
+                sx={{
+                    display: "grid",
+                    gridTemplateColumns: {
+                        xs: "repeat(2, 1fr)",
+                    },
+                    gap: 2
+                }}
+            >
 
                 <ProviderSelector
                     provider={StorageProvider.GoogleDrive}
@@ -159,7 +175,13 @@ export default function StorageProviderSelector({
                     loading={onedriveIsLoading}
                 />
 
-            </HorizontalStack>
+                <ProviderSelector
+                    provider={StorageProvider.SharedFolder}
+                    onSelect={handleSelectSharedFolder}
+                    loading={false}
+                />
+
+            </Box>
 
         </VerticalStack>
 
@@ -181,6 +203,12 @@ export default function StorageProviderSelector({
                 </Typography>
             </VerticalStack>
         </ShowModal>
+
+        <SharedFolderSetupForm
+            isOpen={sharedFolderModalIsOpen}
+            setIsOpen={setSharedFolderModalIsOpen}
+            onConnected={onConnected}
+        />
     </>
 }
 
@@ -207,10 +235,7 @@ function ProviderSelector({
         color="secondary"
         variant="outlined"
         sx={{
-            fontWeight: "bold",
-            mx: "auto",
-            height: 150,
-            width: "100%"
+            py: 2
         }}
         loading={loading}
     >

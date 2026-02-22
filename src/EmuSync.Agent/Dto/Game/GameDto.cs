@@ -13,6 +13,9 @@ public record GameDto
     [JsonPropertyName("autoSync")]
     public bool AutoSync { get; set; }
 
+    [JsonPropertyName("maximumLocalGameBackups")]
+    public int? MaximumLocalGameBackups { get; set; }
+
     [JsonPropertyName("syncSourceIdLocations")]
     public Dictionary<string, string>? SyncSourceIdLocations { get; set; }
 

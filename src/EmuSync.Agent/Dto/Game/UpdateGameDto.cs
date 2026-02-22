@@ -16,6 +16,9 @@ public record UpdateGameDto : IGameDto
 
     [JsonPropertyName("syncSourceIdLocations")]
     public Dictionary<string, string>? SyncSourceIdLocations { get; set; }
+
+    [JsonPropertyName("maximumLocalGameBackups")]
+    public int? MaximumLocalGameBackups { get; set; }
 }
 
 public class UpdateGameDtoValidator : AbstractValidator<UpdateGameDto>

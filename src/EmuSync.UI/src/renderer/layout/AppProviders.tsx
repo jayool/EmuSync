@@ -8,7 +8,7 @@ import { SnackbarProvider, closeSnackbar } from 'notistack';
 import { MaterialDesignContent } from 'notistack';
 
 import relativeTime from 'dayjs/plugin/relativeTime';
-import duration  from 'dayjs/plugin/duration';
+import duration from 'dayjs/plugin/duration';
 import dayjs from 'dayjs';
 import 'dayjs/locale/en-gb';
 import utc from 'dayjs/plugin/utc'; // import the plugin

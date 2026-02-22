@@ -4,6 +4,8 @@ export interface GameSummary {
     id: string;
     name: string;
     autoSync: boolean;
+    maximumLocalGameBackups: number | null;
+    syncSourceIdLocations?: Record<string, string> | null;
     lastSyncedFrom?: string | null;
     lastSyncTimeUtc?: Date | null;
     syncStatusId: GameSyncStatus;
@@ -19,6 +21,7 @@ export interface Game {
     id: string;
     name: string;
     autoSync: boolean;
+    maximumLocalGameBackups: number | null;
     syncSourceIdLocations?: Record<string, string> | null;
     lastSyncedFrom?: string | null;
     lastSyncTimeUtc?: Date | null;
@@ -29,6 +32,7 @@ export interface CreateGame {
     name: string;
     autoSync: boolean;
     syncSourceIdLocations?: Record<string, string> | null;
+    maximumLocalGameBackups: number | null;
 }
 
 export interface UpdateGame {
@@ -36,10 +40,23 @@ export interface UpdateGame {
     name: string;
     autoSync: boolean;
     syncSourceIdLocations?: Record<string, string> | null;
+    maximumLocalGameBackups: number | null;
 }
 
 export interface GameBackupManifest {
     id: string;
     backupFileName: string;
     createdOnUtc: string;
+}
+
+export interface QuickAddRequestBody {
+    games: QuickAddGame[];
+}
+
+export interface QuickAddGame {
+    existingGameId: string | null;
+    path: string;
+    gameName: string | null;
+    autoSync: boolean;
+    maximumLocalGameBackups: number | null;
 }

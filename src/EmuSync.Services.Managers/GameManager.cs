@@ -3,6 +3,7 @@ using EmuSync.Domain.Helpers;
 using EmuSync.Services.Managers.Abstracts;
 using EmuSync.Services.Managers.Enums;
 using EmuSync.Services.Managers.Interfaces;
+using EmuSync.Services.Managers.Objects;
 using EmuSync.Services.Storage;
 using EmuSync.Services.Storage.Interfaces;
 using EmuSync.Services.Storage.Objects;
@@ -86,14 +87,12 @@ public class GameManager(
                 .SyncSourceIdLocations
                 .ToDictionary(
                     x => x.Key,
-                    x =>
-                    {
-                        var v = x.Value?.Trim() ?? string.Empty;
-                        return v.TrimEnd('/', '\\');
-                    });
+                    x => TrimPath(x.Value)
+                );
         }
 
         foundEntity.AutoSync = entity.AutoSync;
+        foundEntity.MaximumLocalGameBackups = entity.MaximumLocalGameBackups;
 
         //add it to the games list
         await WriteToExternalList(foundEntity, ListOperation.Upsert, onProgress: null, cancellationToken);
@@ -101,6 +100,61 @@ public class GameManager(
         Logger.LogInformation("Game {name} was updated", entity.Name);
 
         return foundEntity;
+    }
+
+    public async Task<List<GameEntity>> BulkUpsertAsync(List<GameBulkUpsert> upserts, SyncSourceEntity localSyncSource, CancellationToken cancellationToken = default)
+    {
+        List<GameEntity> changedGames = [];
+
+        var foundEntities = await GetListAsync(cancellationToken);
+        foundEntities ??= [];
+
+        foreach (var upsert in upserts)
+        {
+            if (!string.IsNullOrEmpty(upsert.ExistingGameId))
+            {
+                GameEntity? foundEntity = foundEntities.FirstOrDefault(x => x.Id == upsert.ExistingGameId);
+
+                if (foundEntity == null) continue;
+
+                foundEntity.SyncSourceIdLocations ??= new();
+                bool keyExists = foundEntity.SyncSourceIdLocations.ContainsKey(localSyncSource.Id);
+
+                if (!keyExists)
+                {
+                    foundEntity.SyncSourceIdLocations.Add(localSyncSource.Id, TrimPath(upsert.Path));
+                }
+                else
+                {
+                    foundEntity.SyncSourceIdLocations[localSyncSource.Id] = TrimPath(upsert.Path);
+                }
+
+                foundEntity.AutoSync = upsert.AutoSync ?? false;
+                foundEntity.MaximumLocalGameBackups = upsert.MaximumLocalGameBackups;
+
+                changedGames.Add(foundEntity);
+
+                continue;
+            }
+
+            GameEntity newGame = new()
+            {
+                Id = IdHelper.Create(),
+                Name = upsert.GameName ?? "",
+                SyncSourceIdLocations = new Dictionary<string, string> { { localSyncSource.Id, upsert.Path } },
+                AutoSync = upsert.AutoSync ?? false,
+                MaximumLocalGameBackups = upsert.MaximumLocalGameBackups
+            };
+
+            foundEntities.Add(newGame);
+            changedGames.Add(newGame);
+
+        }
+
+        //update the external list
+        await WriteAllToExternalList(foundEntities, ListOperation.Upsert, onProgress: null, cancellationToken);
+
+        return changedGames;
     }
 
     public async Task<bool> UpdateMetaDataAsync(GameEntity entity, Action<double>? onProgress = null, CancellationToken cancellationToken = default)
@@ -139,10 +193,26 @@ public class GameManager(
         return true;
     }
 
+    private string TrimPath(string? path)
+    {
+        var v = path?.Trim() ?? string.Empty;
+        return v.TrimEnd('/', '\\');
+    }
+
     private async Task WriteToExternalList(
-        GameEntity entity, 
+        GameEntity entity,
         ListOperation operation,
-         Action<double>? onProgress = null,
+        Action<double>? onProgress = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        await WriteAllToExternalList(new List<GameEntity> { entity }, operation, onProgress, cancellationToken);
+    }
+
+    private async Task WriteAllToExternalList(
+        List<GameEntity> entities,
+        ListOperation operation,
+        Action<double>? onProgress = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -159,17 +229,21 @@ public class GameManager(
             file ??= new();
             file.Games ??= [];
 
-            switch (operation)
+            entities.ForEach(entity =>
             {
-                case ListOperation.Upsert:
-                    var newItem = GameMetaData.FromGame(entity);
-                    file.Games.AddOrReplaceItem(newItem, x => x.Id == entity.Id);
-                    break;
+                switch (operation)
+                {
+                    case ListOperation.Upsert:
+                        var newItem = GameMetaData.FromGame(entity);
+                        file.Games.AddOrReplaceItem(newItem, x => x.Id == entity.Id);
+                        break;
 
-                case ListOperation.Remove:
-                    file.Games.RemoveBy(x => x.Id == entity.Id);
-                    break;
-            }
+                    case ListOperation.Remove:
+                        file.Games.RemoveBy(x => x.Id == entity.Id);
+                        break;
+                }
+            });
+
             await storageProvider.UpsertJsonDataAsync(fileName, file, onProgress: onProgress, cancellationToken: cancellationToken);
         }
         finally

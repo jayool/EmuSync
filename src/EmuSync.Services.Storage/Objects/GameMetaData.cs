@@ -29,6 +29,9 @@ public record GameMetaData
     [JsonPropertyName("sb")]
     public long StorageBytes { get; set; }
 
+    [JsonPropertyName("mlgb")]
+    public int? MaximumLocalGameBackups { get; set; }
+
     public GameEntity ToEntity()
     {
         return new()
@@ -40,7 +43,8 @@ public record GameMetaData
             LastSyncedFrom = this.LastSyncedFrom,
             LatestWriteTimeUtc = this.LatestWriteTimeUtc,
             SyncSourceIdLocations = this.SyncSourceIdLocations,
-            StorageBytes = this.StorageBytes
+            StorageBytes = this.StorageBytes,
+            MaximumLocalGameBackups = this.MaximumLocalGameBackups,
         };
     }
 
@@ -55,7 +59,8 @@ public record GameMetaData
             LastSyncTimeUtc = entity.LastSyncTimeUtc,
             LastSyncedFrom = entity.LastSyncedFrom,
             LatestWriteTimeUtc = entity.LatestWriteTimeUtc,
-            StorageBytes = entity.StorageBytes
+            StorageBytes = entity.StorageBytes,
+            MaximumLocalGameBackups = entity.MaximumLocalGameBackups,
         };
     }
 }

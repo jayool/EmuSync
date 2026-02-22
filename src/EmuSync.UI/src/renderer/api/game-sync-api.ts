@@ -1,4 +1,4 @@
-import { get, postWithNoResponse } from "@/renderer/api/api-helper";
+import { get, postWithNoResponse, remove } from "@/renderer/api/api-helper";
 import { GameSyncStatus, SyncProgress  } from "@/renderer/types";
 
 const controller = "GameSync"
@@ -47,6 +47,16 @@ export async function restoreGameFromBackup(id: string, backupId: string): Promi
     const path = `${controller}/${id}/RestoreFromBackup/${backupId}`;
 
     await postWithNoResponse({
+        path
+    });
+
+}
+
+export async function deleteBackup(id: string, backupId: string): Promise<void> {
+
+    const path = `${controller}/${id}/Backup/${backupId}`;
+
+    await remove({
         path
     });
 

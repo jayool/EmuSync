@@ -1,5 +1,6 @@
 ﻿using EmuSync.Agent.Dto.Game;
 using EmuSync.Services.LudusaviImporter;
+using EmuSync.Services.Managers.Objects;
 
 namespace EmuSync.Agent.Mapping;
 
@@ -21,6 +22,7 @@ public static class GameMapping
             LastSyncedFrom = entity.LastSyncedFrom,
             LastSyncTimeUtc = entity.LastSyncTimeUtc,
             StorageBytes = entity.StorageBytes,
+            MaximumLocalGameBackups = entity.MaximumLocalGameBackups
         };
     }
 
@@ -48,7 +50,7 @@ public static class GameMapping
         return new()
         {
             Id = manifest.Id,
-            BackupFileName  = manifest.BackupFileName,
+            BackupFileName = manifest.BackupFileName,
             CreatedOnUtc = manifest.CreatedOnUtc
         };
     }
@@ -65,6 +67,8 @@ public static class GameMapping
             Id = entity.Id,
             Name = entity.Name,
             AutoSync = entity.AutoSync,
+            MaximumLocalGameBackups = entity.MaximumLocalGameBackups,
+            SyncSourceIdLocations = entity.SyncSourceIdLocations,
             LastSyncedFrom = entity.LastSyncedFrom,
             LastSyncTimeUtc = entity.LastSyncTimeUtc,
             StorageBytes = entity.StorageBytes,
@@ -90,7 +94,25 @@ public static class GameMapping
             Id = id,
             Name = dto.Name,
             AutoSync = dto.AutoSync,
-            SyncSourceIdLocations = dto.SyncSourceIdLocations
+            SyncSourceIdLocations = dto.SyncSourceIdLocations,
+            MaximumLocalGameBackups = dto.MaximumLocalGameBackups
+        };
+    }
+
+    /// <summary>
+    /// Maps a <see cref="QuickAddGameDto"/> to a <see cref="GameBulkUpsert"/>
+    /// </summary>
+    /// <param name="dto"></param>
+    /// <returns></returns>
+    public static GameBulkUpsert ToUpsert(this QuickAddGameDto dto)
+    {
+        return new()
+        {
+            ExistingGameId = dto.ExistingGameId,
+            GameName = dto.GameName,
+            AutoSync = dto.AutoSync,
+            MaximumLocalGameBackups = dto.MaximumLocalGameBackups,
+            Path = dto.Path
         };
     }
 }

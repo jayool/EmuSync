@@ -20,6 +20,7 @@ export interface Routes {
 
     localSyncHistory: Route;
 
+    gameQuickAdd: Route;
     game: Route;
     gameAdd: Route;
     gameEdit: Route;
@@ -56,6 +57,14 @@ export const routes: Routes = {
         pathMatcher: (path: string) => editPath("game", path),
         icon: VideogameAssetIcon
     },
+    
+    gameQuickAdd: {
+        href: "/game/quick-add",
+        title: "Quick add/update games",
+        pathMatcher: exactPathMatch,
+        icon: VideogameAssetIcon
+    },
+
     gameAdd: {
         href: "/game/add",
         title: "Add game",

@@ -4,7 +4,6 @@ using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
 using Google.Apis.Services;
 using Microsoft.Extensions.Options;
-using System.Text;
 using System.Text.Json;
 
 namespace EmuSync.Services.Storage.GoogleDrive;
@@ -30,7 +29,15 @@ public class GoogleDriveStorageProvider(
 
         try
         {
-            return await GetJsonFileContentsAsync<TData>(fileId, cancellationToken);
+            var service = await GetDriveService(cancellationToken);
+            var request = service.Files.Get(fileId);
+
+            using var memoryStream = new MemoryStream();
+            await request.DownloadAsync(memoryStream, cancellationToken);
+
+            memoryStream.Position = 0;
+
+            return (await JsonSerializer.DeserializeAsync<TData>(memoryStream, cancellationToken: cancellationToken))!;
         }
         catch (Exception)
         {
@@ -47,7 +54,25 @@ public class GoogleDriveStorageProvider(
 
         if (string.IsNullOrEmpty(fileId)) return;
 
-        await CreateLocalZipFile(fileId, writeToPath, onProgress, cancellationToken);
+        string path = Path.GetDirectoryName(writeToPath)!;
+
+        if (!Path.Exists(path))
+        {
+            Directory.CreateDirectory(path);
+        }
+
+        var service = await GetDriveService(cancellationToken);
+
+        var request = service.Files.Get(fileId);
+        request.Fields = "size";
+
+        var file = await request.ExecuteAsync(cancellationToken);
+        ulong totalSize = file.Size.HasValue && file.Size > 0 ? (ulong)file.Size.Value : 0;
+
+        using var fileStream = new FileStream(writeToPath, FileMode.CreateNew, FileAccess.Write);
+        using var progressStream = new ProgressStream(fileStream, onProgress, totalSize);
+
+        await request.DownloadAsync(progressStream, cancellationToken);
     }
 
     public async Task DeleteFileAsync(string fileName, CancellationToken cancellationToken = default)
@@ -71,7 +96,6 @@ public class GoogleDriveStorageProvider(
     )
     {
         string folderId = await GetOrCreateFolderAsync(StorageConstants.DataFolderName, cancellationToken: cancellationToken);
-
         string? fileId = await GetFileIdByNameAsync(folderId, fileName, cancellationToken: cancellationToken);
 
         if (string.IsNullOrEmpty(fileId))
@@ -80,7 +104,16 @@ public class GoogleDriveStorageProvider(
             return;
         }
 
-        await UpdateJsonFileAsync(fileId, data, onProgress, cancellationToken);
+        var service = await GetDriveService(cancellationToken);
+
+        byte[] bytes = JsonSerializer.SerializeToUtf8Bytes(data, new JsonSerializerOptions { WriteIndented = false });
+
+        using var stream = new MemoryStream(bytes);
+        using var progressStream = new ProgressStream(stream, onProgress);
+
+        var updateRequest = service.Files.Update(new Google.Apis.Drive.v3.Data.File(), fileId, progressStream, "application/json");
+        updateRequest.Fields = "id, name";
+        await updateRequest.UploadAsync(cancellationToken);
     }
 
     public async Task UpsertZipDataAsync(
@@ -91,7 +124,6 @@ public class GoogleDriveStorageProvider(
     )
     {
         string folderId = await GetOrCreateFolderAsync(StorageConstants.DataFolderName, cancellationToken: cancellationToken);
-
         string? fileId = await GetFileIdByNameAsync(folderId, fileName, cancellationToken: cancellationToken);
 
         using var progressStream = new ProgressStream(stream, onProgress);
@@ -102,7 +134,11 @@ public class GoogleDriveStorageProvider(
             return;
         }
 
-        await UpdateZipFileAsync(fileId, progressStream, cancellationToken);
+        var service = await GetDriveService(cancellationToken);
+
+        var updateRequest = service.Files.Update(new Google.Apis.Drive.v3.Data.File(), fileId, progressStream, "application/zip");
+        updateRequest.Fields = "id, name";
+        await updateRequest.UploadAsync(cancellationToken);
     }
 
     public void RemoveRelatedFiles()
@@ -212,8 +248,7 @@ public class GoogleDriveStorageProvider(
     {
         var service = await GetDriveService(cancellationToken);
 
-        string json = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = false });
-        byte[] bytes = Encoding.UTF8.GetBytes(json);
+        byte[] bytes = JsonSerializer.SerializeToUtf8Bytes(data, new JsonSerializerOptions { WriteIndented = false });
 
         var fileMetadata = new Google.Apis.Drive.v3.Data.File()
         {
@@ -232,34 +267,6 @@ public class GoogleDriveStorageProvider(
         _cache.AddFileNameMapping(fileName, createRequest.ResponseBody.Id);
 
         return createRequest.ResponseBody;
-    }
-
-    /// <summary>
-    /// Creates a file
-    /// </summary>
-    /// <param name="fileId"></param>
-    /// <param name="data"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    private async Task<Google.Apis.Drive.v3.Data.File> UpdateJsonFileAsync(
-        string fileId,
-        object data,
-        Action<double>? onProgress = null,
-        CancellationToken cancellationToken = default
-    )
-    {
-        var service = await GetDriveService(cancellationToken);
-
-        string json = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = false });
-        byte[] bytes = Encoding.UTF8.GetBytes(json);
-
-        using var stream = new MemoryStream(bytes);
-        using var progressStream = new ProgressStream(stream, onProgress);
-
-        var updateRequest = service.Files.Update(new Google.Apis.Drive.v3.Data.File(), fileId, progressStream, "application/json");
-        updateRequest.Fields = "id, name";
-        await updateRequest.UploadAsync();
-        return updateRequest.ResponseBody;
     }
 
 
@@ -293,78 +300,6 @@ public class GoogleDriveStorageProvider(
         _cache.AddFileNameMapping(fileName, createRequest.ResponseBody.Id);
 
         return createRequest.ResponseBody;
-    }
-
-    /// <summary>
-    /// Creates a file
-    /// </summary>
-    /// <param name="fileId"></param>
-    /// <param name="stream"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    private async Task<Google.Apis.Drive.v3.Data.File> UpdateZipFileAsync(
-        string fileId,
-        Stream stream,
-        CancellationToken cancellationToken = default
-    )
-    {
-        var service = await GetDriveService(cancellationToken);
-
-        var updateRequest = service.Files.Update(new Google.Apis.Drive.v3.Data.File(), fileId, stream, "application/zip");
-        updateRequest.Fields = "id, name";
-        await updateRequest.UploadAsync();
-        return updateRequest.ResponseBody;
-    }
-
-    /// <summary>
-    /// Gets a JSON file contents
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="fileId"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    private async Task<T> GetJsonFileContentsAsync<T>(string fileId, CancellationToken cancellationToken = default)
-    {
-        var service = await GetDriveService(cancellationToken);
-
-        var request = service.Files.Get(fileId);
-
-        using var memoryStream = new MemoryStream();
-        await request.DownloadAsync(memoryStream, cancellationToken);
-
-        memoryStream.Position = 0;
-
-        return (await JsonSerializer.DeserializeAsync<T>(memoryStream, cancellationToken: cancellationToken))!;
-    }
-
-    /// <summary>
-    /// Gets a zip file contents
-    /// </summary>
-    /// <param name="fileId"></param>
-    /// <param name="writeToPath"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    private async Task CreateLocalZipFile(string fileId, string writeToPath, Action<double>? onProgress = null, CancellationToken cancellationToken = default)
-    {
-        string path = Path.GetDirectoryName(writeToPath)!;
-
-        if (!Path.Exists(path))
-        {
-            Directory.CreateDirectory(path);
-        }
-
-        var service = await GetDriveService(cancellationToken);
-
-        var request = service.Files.Get(fileId);
-        request.Fields = "size";
-
-        var file = await request.ExecuteAsync(cancellationToken);
-        ulong totalSize = file.Size.HasValue && file.Size > 0 ? (ulong)file.Size.Value : 0;
-
-        using var fileStream = new FileStream(writeToPath, FileMode.CreateNew, FileAccess.Write);
-        using var progressStream = new ProgressStream(fileStream, onProgress, totalSize);
-
-        await request.DownloadAsync(progressStream, cancellationToken);
     }
 
     /// <summary>

@@ -4,21 +4,27 @@ using EmuSync.Services.Managers.Interfaces;
 using EmuSync.Services.Storage.Dropbox;
 using EmuSync.Services.Storage.GoogleDrive;
 using EmuSync.Services.Storage.OneDrive;
+using EmuSync.Services.Storage.SharedFolder;
+using System.ComponentModel.DataAnnotations;
 
 namespace EmuSync.Agent.Controllers;
 
 [ApiController]
 [Route("[controller]")]
 public class AuthController(
+    ILogger<AuthController> logger,
     DropboxAuthHandler dropboxAuthHandler,
     GoogleAuthHandler googleAuthHandler,
     MicrosoftAuthHandler microsoftAuthHandler,
-    ISyncSourceManager syncSourceManager
-) : ControllerBase
+    SharedFolderAuthHandler sharedFolderAuthHandler,
+    ISyncSourceManager syncSourceManager,
+    IValidationService validator
+) : CustomControllerBase(logger, validator)
 {
     private readonly DropboxAuthHandler _dropboxAuthHandler = dropboxAuthHandler;
     private readonly GoogleAuthHandler _googleAuthHandler = googleAuthHandler;
     private readonly MicrosoftAuthHandler _microsoftAuthHandler = microsoftAuthHandler;
+    private readonly SharedFolderAuthHandler _sharedFolderAuthHandler = sharedFolderAuthHandler;
     private readonly ISyncSourceManager _syncSourceManager = syncSourceManager;
 
     [HttpGet("Dropbox/AuthUrl")]
@@ -93,6 +99,23 @@ public class AuthController(
         await _syncSourceManager.SetLocalStorageProviderAsync(storageProvider, cancellationToken);
 
         return SuccessfulAuth();
+    }
+
+    [HttpPost("SharedFolder/AuthFinish")]
+    public async Task<IActionResult> SharedFolderAuthFinish([FromBody]SharedFolderAuthFinishDto requestBody, CancellationToken cancellationToken)
+    {
+        LogRequest($"{nameof(SharedFolderAuthFinish)}", requestBody);
+
+        List<string> bodyErrors = await Validator.ValidateAsync(requestBody, cancellationToken);
+        if (bodyErrors.Count > 0) return BadRequestWithErrors(bodyErrors.ToArray());
+
+        var details = requestBody.ToSharedFolderDetails();
+        await _sharedFolderAuthHandler.SaveDetailsAsync(details, cancellationToken);
+
+        StorageProvider storageProvider = StorageProvider.SharedFolder;
+        await _syncSourceManager.SetLocalStorageProviderAsync(storageProvider, cancellationToken);
+
+        return Ok();
     }
 
     private IActionResult SuccessfulAuth()

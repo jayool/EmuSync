@@ -12,6 +12,7 @@ import StorageProviderSelector from "@/renderer/views/this-device/components/Sto
 import BackupIcon from '@mui/icons-material/Backup';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Section from "@/renderer/components/Section";
+import useAlerts from "@/renderer/hooks/use-alerts";
 
 export default function StorageProviderForm() {
 
@@ -29,7 +30,6 @@ export default function StorageProviderForm() {
         });
 
         query.refetch();
-
     }, []);
 
     return <Section>

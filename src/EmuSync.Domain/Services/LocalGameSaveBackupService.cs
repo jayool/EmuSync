@@ -20,21 +20,21 @@ public class LocalGameSaveBackupService(
         return manifests ?? [];
     }
 
-    public async Task CreateBackupAsync(string gameId, string path, Action<double>? onProgress = null, CancellationToken cancellationToken = default)
+    public async Task CreateBackupAsync(GameEntity game, string path, Action<double>? onProgress = null, CancellationToken cancellationToken = default)
     {
         DateTime now = DateTime.UtcNow;
         string fileName = string.Format(DomainConstants.LocalDataGameBackupFileNameFormat, now.ToString("dd-MM-yyyy_HH-mm-ss"));
-        string fullBackupLocation = GetGameBackupFileName(gameId, fileName);
+        string fullBackupLocation = GetGameBackupFileName(game.Id, fileName);
 
         if (!Directory.Exists(path))
         {
-            _logger.LogInformation("Location {pathj} didn't exist, skipping backup for game {gameId}", path, gameId);
+            _logger.LogInformation("Location {path} didn't exist, skipping backup for game {gameId}", path, game.Id);
             return;
         }
 
         //create the zip backup content
         ZipHelper.CreateZipFromFolder(path, fullBackupLocation, onProgress);
-        await AddBackupToManifestAsync(gameId, fileName, now, cancellationToken);
+        await AddBackupToManifestAsync(game, fileName, now, cancellationToken);
     }
 
     public async Task RestoreBackupAsync(string gameId, string backupId, string outputDirectory, CancellationToken cancellationToken = default)
@@ -60,16 +60,42 @@ public class LocalGameSaveBackupService(
         ZipHelper.ExtractToDirectory(fileStream, outputDirectory, DateTime.UtcNow);
     }
 
-    private async Task AddBackupToManifestAsync(string gameId, string fileName, DateTime createdOnUtc, CancellationToken cancellationToken = default)
+    public async Task DeleteBackupAsync(string gameId, string backupId, CancellationToken cancellationToken = default)
     {
         List<LocalGameBackupManifestEntity>? manifests = await GetBackupManifestAsync(gameId, cancellationToken);
+        LocalGameBackupManifestEntity? manifest = manifests?.FirstOrDefault(x => x.Id == backupId);
+
+        if (manifest == null)
+        {
+            _logger.LogError("No backup manifest found for game {gameId}, backup ID {backupId}", gameId, backupId);
+            throw new InvalidOperationException($"No backup manifest found for game {gameId}, backup ID {backupId}");
+        }
+
+        string fullBackupLocation = GetGameBackupFileName(gameId, manifest.BackupFileName);
+
+        if (!File.Exists(fullBackupLocation))
+        {
+            _logger.LogError("Backup file didn't exist at {fileLocation}", fullBackupLocation);
+            throw new FileNotFoundException("Failed to find backup file", fullBackupLocation);
+        }
+
+        File.Delete(fullBackupLocation);
+
+        manifests!.Remove(manifest);
+        string manifestFile = GetGameBackupManifestFileName(gameId);
+        await _localDataAccessor.WriteFileContentsAsync(manifestFile, manifests, cancellationToken);
+    }
+
+    private async Task AddBackupToManifestAsync(GameEntity game, string fileName, DateTime createdOnUtc, CancellationToken cancellationToken = default)
+    {
+        List<LocalGameBackupManifestEntity>? manifests = await GetBackupManifestAsync(game.Id, cancellationToken);
         manifests ??= [];
 
         LocalGameBackupManifestEntity manifest = new()
         {
             Id = IdHelper.Create(),
             BackupFileName = fileName,
-            GameId = gameId,
+            GameId = game.Id,
             CreatedOnUtc = createdOnUtc
         };
 
@@ -77,14 +103,17 @@ public class LocalGameSaveBackupService(
 
         //new backup created - now we need to trim the amount of backups to the limit we have set
         SyncSourceEntity syncSource = await GetLocalSyncSourceAsync(cancellationToken);
-        int maxBackups = syncSource.MaximumLocalGameBackups ?? DomainConstants.DefaultMaximumLocalGameBackups;
+
+        int maxBackups = game.MaximumLocalGameBackups
+            ?? syncSource.MaximumLocalGameBackups 
+            ?? DomainConstants.DefaultMaximumLocalGameBackups;
 
         if (manifests.Count > maxBackups)
         {
-            DeleteOldBackups(gameId, manifests, maxBackups);
+            DeleteOldBackups(game.Id, manifests, maxBackups);
         }
 
-        string manifestFile = GetGameBackupManifestFileName(gameId);
+        string manifestFile = GetGameBackupManifestFileName(game.Id);
         await _localDataAccessor.WriteFileContentsAsync(manifestFile, manifests, cancellationToken);
     }
 

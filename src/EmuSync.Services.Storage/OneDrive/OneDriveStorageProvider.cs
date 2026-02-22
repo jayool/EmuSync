@@ -117,8 +117,7 @@ public class OneDriveStorageProvider(
 
         string path = $"{fileName}:/content";
 
-        string json = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = false });
-        byte[] bytes = Encoding.UTF8.GetBytes(json);
+        byte[] bytes = JsonSerializer.SerializeToUtf8Bytes(data, new JsonSerializerOptions { WriteIndented = false });
 
         using var stream = new MemoryStream(bytes);
         using var progressStream = new ProgressStream(stream, onProgress);

@@ -1,4 +1,6 @@
-﻿namespace EmuSync.Services.Managers.Interfaces;
+﻿using EmuSync.Services.Managers.Objects;
+
+namespace EmuSync.Services.Managers.Interfaces;
 
 public interface IGameManager
 {
@@ -33,6 +35,15 @@ public interface IGameManager
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<GameEntity?> UpdateAsync(GameEntity entity, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Bulk upserts the <paramref name="upserts"/> into <see cref="GameEntity"/>
+    /// </summary>
+    /// <param name="upserts"></param>
+    /// <param name="localSyncSource"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<List<GameEntity>> BulkUpsertAsync(List<GameBulkUpsert> upserts, SyncSourceEntity localSyncSource, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Updates the more detailed info of a <see cref="GameEntity"/>

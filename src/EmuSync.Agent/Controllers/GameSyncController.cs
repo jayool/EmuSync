@@ -4,7 +4,6 @@ using EmuSync.Domain.Objects;
 using EmuSync.Domain.Services.Interfaces;
 using EmuSync.Services.Managers.Interfaces;
 using EmuSync.Services.Managers.Results;
-using System.Diagnostics.CodeAnalysis;
 
 namespace EmuSync.Agent.Controllers;
 
@@ -17,7 +16,8 @@ public class GameSyncController(
     IGameManager gameManager,
     ISyncSourceManager syncSourceManager,
     IGameSyncStatusCache gameSyncStatusCache,
-    ISyncProgressTracker syncProgressTracker
+    ISyncProgressTracker syncProgressTracker,
+    ILocalGameSaveBackupService backupService
 ) : CustomControllerBase(logger, validator)
 {
     private readonly IGameSyncManager _manager = manager;
@@ -25,6 +25,7 @@ public class GameSyncController(
     private readonly ISyncSourceManager _syncSourceManager = syncSourceManager;
     private readonly IGameSyncStatusCache _gameSyncStatusCache = gameSyncStatusCache;
     private readonly ISyncProgressTracker _syncProgressTracker = syncProgressTracker;
+    private readonly ILocalGameSaveBackupService _backupService = backupService;
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetSyncStatus([FromRoute] string id, CancellationToken cancellationToken = default)
@@ -157,7 +158,6 @@ public class GameSyncController(
             return BadRequest("No sync source has been set up");
         }
 
-        //always fetch latest game on force
         GameEntity? game = await _gameManager.GetAsync(id, cancellationToken);
 
         if (game == null)
@@ -168,6 +168,30 @@ public class GameSyncController(
         await _manager.RestoreFromBackup(syncSource.Id, game, backupId, cancellationToken);
 
         _gameSyncStatusCache.AddOrUpdate(id, GameSyncStatus.InSync);
+
+        return Ok();
+    }
+
+    [HttpDelete("{id}/Backup/{backupId}")]
+    public async Task<IActionResult> DeleteBackup([FromRoute] string id, [FromRoute] string backupId, CancellationToken cancellationToken = default)
+    {
+        LogRequest($"{id}/{nameof(RestoreFromBackup)}/{backupId}");
+
+        SyncSourceEntity? syncSource = await _syncSourceManager.GetLocalAsync(cancellationToken);
+
+        if (syncSource == null)
+        {
+            return BadRequest("No sync source has been set up");
+        }
+
+        GameEntity? game = await _gameManager.GetAsync(id, cancellationToken);
+
+        if (game == null)
+        {
+            return NotFoundWithErrors($"No game found with ID {id}");
+        }
+
+        await _backupService.DeleteBackupAsync(id, backupId, cancellationToken);
 
         return Ok();
     }

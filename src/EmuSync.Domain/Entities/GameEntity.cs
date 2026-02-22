@@ -35,4 +35,9 @@ public class GameEntity
     /// The amount of bytes the files take up
     /// </summary>
     public long StorageBytes { get; set; }
+
+    /// <summary>
+    /// The amount of local backups to store per game - overrides the value set at sync source level
+    /// </summary>
+    public int? MaximumLocalGameBackups { get; set; }
 }

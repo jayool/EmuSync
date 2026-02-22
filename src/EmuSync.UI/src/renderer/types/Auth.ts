@@ -11,3 +11,9 @@ export interface GoogleAuthUrlResponse {
 export interface MicrosoftAuthUrlResponse {
     url: string;
 }
+
+export interface SharedFolderAuthFinish {
+    path: string;
+    username: string | null;
+    password: string | null;
+}

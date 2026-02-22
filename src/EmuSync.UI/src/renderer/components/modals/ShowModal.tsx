@@ -43,7 +43,7 @@ export default function ShowModal({
         fullWidth
 
         PaperProps={{
-            elevation: paperElevation ?? 3
+            elevation: paperElevation ?? 2
         }}
     >
         <DialogTitle>

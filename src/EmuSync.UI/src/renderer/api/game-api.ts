@@ -1,5 +1,5 @@
 import { get, post, postWithNoResponse, put, remove } from "@/renderer/api/api-helper";
-import { CreateGame, Game, GameBackupManifest, GameSuggestion, GameSummary, UpdateGame } from "@/renderer/types";
+import { CreateGame, Game, GameBackupManifest, GameSuggestion, GameSummary, QuickAddRequestBody, UpdateGame } from "@/renderer/types";
 
 const controller = "Game"
 
@@ -81,6 +81,17 @@ export async function deleteGame(id: string): Promise<void> {
 
     await remove({
         path
+    });
+
+}
+
+export async function quickAddGames(body: QuickAddRequestBody): Promise<void> {
+
+    const path = `${controller}/QuickAdd`;
+
+    return await postWithNoResponse({
+        path,
+        body
     });
 
 }

@@ -4,6 +4,8 @@ using EmuSync.Domain.Extensions;
 using EmuSync.Domain.Services.Interfaces;
 using EmuSync.Services.LudusaviImporter;
 using EmuSync.Services.Managers.Interfaces;
+using EmuSync.Services.Managers.Objects;
+using static Dropbox.Api.Files.ListRevisionsMode;
 
 namespace EmuSync.Agent.Controllers;
 
@@ -18,7 +20,8 @@ public class GameController(
     IGameSyncService gameSyncService,
     ISyncTasks syncTasks,
     IApiCache apiCache,
-    ILocalGameSaveBackupService localGameSaveBackupService
+    ILocalGameSaveBackupService localGameSaveBackupService,
+    ISyncSourceManager syncSourceManager
 ) : CustomControllerBase(logger, validator)
 {
     private readonly IGameManager _manager = manager;
@@ -28,6 +31,7 @@ public class GameController(
     private readonly ISyncTasks _syncTasks = syncTasks;
     private readonly IApiCache _apiCache = apiCache;
     private readonly ILocalGameSaveBackupService _localGameSaveBackupService = localGameSaveBackupService;
+    private readonly ISyncSourceManager _syncSourceManager = syncSourceManager;
 
     [HttpGet]
     public async Task<IActionResult> GetList(CancellationToken cancellationToken = default)
@@ -62,7 +66,7 @@ public class GameController(
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById([FromRoute]string id, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetById([FromRoute] string id, CancellationToken cancellationToken = default)
     {
         GameEntity? entity = _apiCache.GetGame(id);
         entity ??= await _manager.GetAsync(id, cancellationToken);
@@ -168,6 +172,33 @@ public class GameController(
     {
         _apiCache.Games.Clear();
         return Ok();
+    }
+
+
+    [HttpPost("QuickAdd")]
+    public async Task<IActionResult> QuickAdd([FromBody] QuickAddRequestBodyDto requestBody, CancellationToken cancellationToken = default)
+    {
+        LogRequest($"{nameof(QuickAdd)}", requestBody);
+
+        List<string> errors = await Validator.ValidateAsync(requestBody, cancellationToken);
+        if (errors.Count > 0) return BadRequestWithErrors(errors.ToArray());
+
+        var localSyncSource = await _syncSourceManager.GetLocalAsync(cancellationToken);
+
+        if (localSyncSource == null)
+        {
+            return BadRequestWithErrors("No sync source has been configured");
+        }
+
+        List<GameBulkUpsert> upserts = requestBody.Games.ConvertAll(x => x.ToUpsert());
+        var changedGames = await _manager.BulkUpsertAsync(upserts, localSyncSource, cancellationToken);
+
+        changedGames.ForEach(game =>
+        {
+            _apiCache.Games.Value?.AddOrReplaceItem(game, x => x.Id == game.Id);
+        });
+
+        return NoContent();
     }
 
     private async Task TryUpdateSyncTaskAsync(GameEntity game, CancellationToken cancellationToken)

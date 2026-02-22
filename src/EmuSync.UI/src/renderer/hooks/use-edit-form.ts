@@ -19,6 +19,7 @@ export default function useEditForm<TData, TUpdateModel extends FieldValues>({
         reset,
         formState,
         setValue,
+        getValues,
         watch
     } = useForm<TUpdateModel>({
         defaultValues
@@ -40,6 +41,7 @@ export default function useEditForm<TData, TUpdateModel extends FieldValues>({
         formState,
         setValue,
         reset,
+        getValues,
         watch
     }
 }
