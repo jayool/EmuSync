@@ -98,3 +98,20 @@ Other changes:
 
 - Added a small delay before the game detection service kicks in.
 - Added the game ID into the game edit screen.
+
+# v1.0.10
+
+### Quick add/update games
+
+You can now add or update multiple games at once. This feature can be accessed by using the **Quick add/update games** button from the **Games** list screen. See more [here](https://github.com/emu-sync/EmuSync/wiki/Quick-add-games-section).
+
+- Add multiple games from your list of suggested games.
+- Update multiple games from your list of existing games, or by picking from your list of suggested games that already exist in EmuSync.
+
+### Shared/local folder storage provider
+
+You can now select a local folder or shared network folder a your storage provider. Whilst this is not the original intended use for EmuSync, this option should allow you to use other unsupported cloud storage providers outside of EmuSync.
+
+### Other changes
+
+- You can now override the maximum amount of local backups kept per game.
