@@ -1,4 +1,5 @@
 import { Game, QuickAddRequestBody, SyncSource } from "@/renderer/types";
+import { normalisePathDelims } from "@/renderer/utils/path-utils";
 
 
 export interface QuickAddGameClientModel {
@@ -21,7 +22,7 @@ export function getDefaultValues(): QuickAddGamesForm {
     }
 }
 
-export function convertToRequestBody(form: QuickAddGamesForm): QuickAddRequestBody {
+export function convertToRequestBody(form: QuickAddGamesForm, isWindows: boolean): QuickAddRequestBody {
 
     const output: QuickAddRequestBody = {
         games: form.games.map(game => {
@@ -30,7 +31,7 @@ export function convertToRequestBody(form: QuickAddGamesForm): QuickAddRequestBo
 
             return {
                 existingGameId: game.existingGame?.id ?? null,
-                path: game.path,
+                path: normalisePathDelims(game.path, isWindows),
                 gameName: gameExists ? null : game.name,
                 autoSync: game.autoSync,
                 maximumLocalGameBackups: game.maxLocalBackups?.toString() === "" ? null : game.maxLocalBackups

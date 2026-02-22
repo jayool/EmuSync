@@ -57,7 +57,7 @@ export default function GameForm({
             setMaximumBackupsSaveValue(query.data?.maximumLocalGameBackups ?? null);
         }
 
-    }, [query.isFetched]);
+    }, [query.isFetched, query.isRefetching]);
 
     const disabled = query.isFetching;
     const isSubmitting = saveMutation.isPending;
@@ -246,7 +246,7 @@ export default function GameForm({
                         )}
                     />
 
-                    {
+                    {/* {
                         autoSyncEnabled &&
                         <WarningAlert
                             content={
@@ -255,7 +255,7 @@ export default function GameForm({
                                 </Typography>
                             }
                         />
-                    }
+                    } */}
 
                     <Paper
                         elevation={3}

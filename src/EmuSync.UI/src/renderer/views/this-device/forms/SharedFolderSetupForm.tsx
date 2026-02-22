@@ -1,13 +1,16 @@
 
 import { completeSharedFolderSetup } from "@/renderer/api/auth-api";
 import ButtonRow from "@/renderer/components/buttons/ButtonRow";
+import PickDirectoryButton from "@/renderer/components/buttons/PickDirectoryButton";
 import DefaultTextField from "@/renderer/components/inputs/DefaultTextField";
 import ShowModal from "@/renderer/components/modals/ShowModal";
+import HorizontalStack from "@/renderer/components/stacks/HorizontalStack";
 import VerticalStack from "@/renderer/components/stacks/VerticalStack";
 import useAlerts from "@/renderer/hooks/use-alerts";
 import { localSyncSourceAtom } from "@/renderer/state/local-sync-source";
 import { SharedFolderAuthFinish } from "@/renderer/types";
 import { OsPlatform } from "@/renderer/types/enums";
+import { normalisePathDelims } from "@/renderer/utils/path-utils";
 import { Button, Divider } from "@mui/material";
 import { useAtom } from "jotai";
 import { useCallback, useMemo, useState } from "react";
@@ -67,6 +70,8 @@ export default function SharedFolderSetupForm({
 
         try {
 
+            data.path = normalisePathDelims(data.path, thisDeviceIsWindows);
+
             await completeSharedFolderSetup(data);
             onConnected();
 
@@ -80,7 +85,7 @@ export default function SharedFolderSetupForm({
         }
 
 
-    }, [onConnected]);
+    }, [onConnected, thisDeviceIsWindows]);
 
     return <ShowModal
         isOpen={isOpen}
@@ -94,19 +99,33 @@ export default function SharedFolderSetupForm({
                     control={control as never}
                     rules={{ required: "Path is required" }}
                     render={({ field, fieldState }) => (
-                        <DefaultTextField
-                            required
-                            field={field}
-                            fieldState={fieldState}
-                            label="Path"
-                            disabled={isSubmitting}
-                            placeholder="E.g., \\Your-Device\SharedFolder or C:\\YourFolder"
-                        />
+                        <HorizontalStack>
+                            <DefaultTextField
+                                required
+                                field={field}
+                                fieldState={fieldState}
+                                label="Path"
+                                disabled={isSubmitting}
+                                placeholder={
+                                    thisDeviceIsWindows
+                                        ? `E.g., \\\\Your-Device\\SharedFolder or C:\\YourFolder`
+                                        : "E.g., /home/deck/your-folder"
+                                }
+                            />
+
+                            <PickDirectoryButton
+                                disabled={isSubmitting}
+                                defaultPath={field.value}
+                                onPickDirectory={(directory) => field.onChange(directory)}
+                            />
+                        </HorizontalStack>
+
                     )}
                 />
 
                 {
                     thisDeviceIsWindows && <>
+                        <Divider />
 
                         <Controller
                             name="username"

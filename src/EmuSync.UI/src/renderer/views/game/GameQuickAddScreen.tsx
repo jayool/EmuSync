@@ -11,14 +11,13 @@ import useAlerts from "@/renderer/hooks/use-alerts";
 import useListQuery from "@/renderer/hooks/use-list-query";
 import { routes } from "@/renderer/routes";
 import { localSyncSourceAtom } from "@/renderer/state/local-sync-source";
-import { Game, GameSuggestion, GameSummary, QuickAddRequestBody } from "@/renderer/types";
+import { GameSuggestion, GameSummary, QuickAddRequestBody } from "@/renderer/types";
+import { OsPlatform } from "@/renderer/types/enums";
 import QuickAddGame from "@/renderer/views/game/components/QuickAddGame";
 import DividerWord from "@/renderer/views/game/DividerWord";
 import { QuickAddGameClientModel, QuickAddGamesForm, convertToRequestBody, getDefaultValues } from "@/renderer/views/game/utils/quick-add-utils";
-import { KeyboardReturnOutlined } from "@mui/icons-material";
 import { Autocomplete, Box, Button, Divider, Grid, Paper, TextField, Typography } from "@mui/material";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { error } from "console";
 import { useAtom } from "jotai";
 import { useCallback, useMemo, useState } from "react";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
@@ -28,9 +27,14 @@ const Icon = routes.gameQuickAdd.icon;
 export default function GameQuickAddScreen() {
 
     const [localSyncSource] = useAtom(localSyncSourceAtom);
+
     const { successAlert, errorAlert } = useAlerts();
     const queryClient = useQueryClient();
     const [existingGameInput, setExistingGameInput] = useState("");
+
+    const thisDeviceIsWindows = useMemo(() => {
+        return localSyncSource.platformId === OsPlatform.Windows;
+    }, [localSyncSource]);
 
     const {
         query
@@ -98,10 +102,9 @@ export default function GameQuickAddScreen() {
     }, [watchedGames, fullGameList]);
 
     const handleFormSubmit = useCallback((data: QuickAddGamesForm) => {
-        const body = convertToRequestBody(data);
-        console.log(body);
+        const body = convertToRequestBody(data, thisDeviceIsWindows);
         updateMutation.mutate(body)
-    }, []);
+    }, [thisDeviceIsWindows]);
 
     const handleGameSuggestionSelect = useCallback((game: GameSuggestion, filePath: string) => {
 

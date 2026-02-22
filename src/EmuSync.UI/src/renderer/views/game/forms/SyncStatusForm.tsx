@@ -114,6 +114,7 @@ export default function SyncStatusForm({
     });
 
     const refreshQueries = useCallback(() => {
+        queryClient.invalidateQueries({ queryKey: [cacheKeys.gameList] });
         queryClient.invalidateQueries({ queryKey: [gameSyncStatusKey] });
         queryClient.invalidateQueries({ queryKey: [gameBackupsKey] });
         queryClient.invalidateQueries({ queryKey: [gameLocalSyncLogsKey] });

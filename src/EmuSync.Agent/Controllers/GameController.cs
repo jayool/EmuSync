@@ -5,6 +5,7 @@ using EmuSync.Domain.Services.Interfaces;
 using EmuSync.Services.LudusaviImporter;
 using EmuSync.Services.Managers.Interfaces;
 using EmuSync.Services.Managers.Objects;
+using static Dropbox.Api.Files.ListRevisionsMode;
 
 namespace EmuSync.Agent.Controllers;
 
@@ -190,7 +191,12 @@ public class GameController(
         }
 
         List<GameBulkUpsert> upserts = requestBody.Games.ConvertAll(x => x.ToUpsert());
-        await _manager.BulkUpsertAsync(upserts, localSyncSource, cancellationToken);
+        var changedGames = await _manager.BulkUpsertAsync(upserts, localSyncSource, cancellationToken);
+
+        changedGames.ForEach(game =>
+        {
+            _apiCache.Games.Value?.AddOrReplaceItem(game, x => x.Id == game.Id);
+        });
 
         return NoContent();
     }

@@ -102,8 +102,10 @@ public class GameManager(
         return foundEntity;
     }
 
-    public async Task BulkUpsertAsync(List<GameBulkUpsert> upserts, SyncSourceEntity localSyncSource, CancellationToken cancellationToken = default)
+    public async Task<List<GameEntity>> BulkUpsertAsync(List<GameBulkUpsert> upserts, SyncSourceEntity localSyncSource, CancellationToken cancellationToken = default)
     {
+        List<GameEntity> changedGames = [];
+
         var foundEntities = await GetListAsync(cancellationToken);
         foundEntities ??= [];
 
@@ -127,6 +129,11 @@ public class GameManager(
                     foundEntity.SyncSourceIdLocations[localSyncSource.Id] = TrimPath(upsert.Path);
                 }
 
+                foundEntity.AutoSync = upsert.AutoSync ?? false;
+                foundEntity.MaximumLocalGameBackups = upsert.MaximumLocalGameBackups;
+
+                changedGames.Add(foundEntity);
+
                 continue;
             }
 
@@ -140,11 +147,14 @@ public class GameManager(
             };
 
             foundEntities.Add(newGame);
+            changedGames.Add(newGame);
 
         }
 
         //update the external list
         await WriteAllToExternalList(foundEntities, ListOperation.Upsert, onProgress: null, cancellationToken);
+
+        return changedGames;
     }
 
     public async Task<bool> UpdateMetaDataAsync(GameEntity entity, Action<double>? onProgress = null, CancellationToken cancellationToken = default)

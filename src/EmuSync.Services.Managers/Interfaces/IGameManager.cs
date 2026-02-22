@@ -43,7 +43,7 @@ public interface IGameManager
     /// <param name="localSyncSource"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task BulkUpsertAsync(List<GameBulkUpsert> upserts, SyncSourceEntity localSyncSource, CancellationToken cancellationToken = default);
+    Task<List<GameEntity>> BulkUpsertAsync(List<GameBulkUpsert> upserts, SyncSourceEntity localSyncSource, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Updates the more detailed info of a <see cref="GameEntity"/>

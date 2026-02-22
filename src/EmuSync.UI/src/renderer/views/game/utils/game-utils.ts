@@ -1,5 +1,6 @@
 import { CreateGame, Game, GameSyncStatus, SyncSourceSummary, UpdateGame } from "@/renderer/types";
 import { OsPlatform } from "@/renderer/types/enums";
+import { normalisePathDelims } from "@/renderer/utils/path-utils";
 
 export const defaultUpdateGame: UpdateGame = {
     id: "",
@@ -63,10 +64,7 @@ export function replacePathDelims(syncSources: SyncSourceSummary[], game: Update
         }
 
         const isWindows = syncSource.platformId === OsPlatform.Windows;
-
-        updated[id] = isWindows
-            ? path.replace(/\//g, "\\") //normalise → Windows
-            : path.replace(/\\/g, "/"); //normalise → mac + linux
+        updated[id] = normalisePathDelims(path, isWindows);
     }
 
     return {
