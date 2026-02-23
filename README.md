@@ -31,7 +31,7 @@ Confirmed working devices (but not limited to):
 
 
 ## 🎨 Features
-- Use your own cloud storage provider.
+- Use your own cloud storage provider or a local/shared folder.
     - Google Drive
     - Dropbox
     - OneDrive
