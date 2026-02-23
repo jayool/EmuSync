@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace EmuSync.Agent.Dto.Game;
+namespace EmuSync.Agent.Dto.SyncSource;
 
 public record SyncSourceSummaryDto
 {

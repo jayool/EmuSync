@@ -39,14 +39,20 @@ public class SyncTasks(ILogger<SyncTasks> logger) : ISyncTasks
 
     public bool Update(GameEntity game)
     {
-        bool updated = _syncTasks.TryUpdate(game.Id, game, game);
+        return _syncTasks.TryGetValue(game.Id, out var existing)
+            && _syncTasks.TryUpdate(game.Id, game, existing)
+            && LogUpdated(game);
+    }
 
-        if (updated)
-        {
-            _logger.LogInformation("[{gameName} / {gameId}] sync task updated", game.Name, game.Id);
-        }
+    private bool LogUpdated(GameEntity game)
+    {
+        _logger.LogInformation(
+            "[{gameName} / {gameId}] sync task updated",
+            game.Name,
+            game.Id
+        );
 
-        return updated;
+        return true;
     }
 
     public bool Remove(string gameId)

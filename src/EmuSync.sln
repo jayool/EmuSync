@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.3.11218.70 d18.3
+VisualStudioVersion = 18.3.11218.70
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmuSync.Agent", "EmuSync.Agent\EmuSync.Agent.csproj", "{08C268A9-C9B0-46E0-B071-4E14BBAE37BE}"
 EndProject
@@ -17,6 +17,16 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmuSync.Services.Managers", "EmuSync.Services.Managers\EmuSync.Services.Managers.csproj", "{802BA2A0-065D-41D7-A53D-DAAA9FCB9F84}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmuSync.Services.LudusaviImporter", "EmuSync.Services.LudusaviImporter\EmuSync.Services.LudusaviImporter.csproj", "{FBCCA3F4-C3C8-45FA-AF1E-AE9F3F7F1125}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmuSync.Agent.Tests", "EmuSync.Agent.Tests\EmuSync.Agent.Tests.csproj", "{9074F794-82F1-40B1-AB46-0B115EF2415D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmuSync.Domain.Tests", "EmuSync.Domain.Tests\EmuSync.Domain.Tests.csproj", "{4C61268F-57F1-43DE-9B35-06702848ADB1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmuSync.Services.Managers.Tests", "EmuSync.Services.Managers.Tests\EmuSync.Services.Managers.Tests.csproj", "{1483C44C-1456-4360-B836-797E5D61388F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmuSync.Services.Storage.Tests", "EmuSync.Services.Storage.Tests\EmuSync.Services.Storage.Tests.csproj", "{2D238E06-ED08-4C45-BDB7-4C15E5D5AB5B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{5EE87317-9810-46E6-B754-72139146D76D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -44,9 +54,31 @@ Global
 		{FBCCA3F4-C3C8-45FA-AF1E-AE9F3F7F1125}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FBCCA3F4-C3C8-45FA-AF1E-AE9F3F7F1125}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FBCCA3F4-C3C8-45FA-AF1E-AE9F3F7F1125}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9074F794-82F1-40B1-AB46-0B115EF2415D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9074F794-82F1-40B1-AB46-0B115EF2415D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9074F794-82F1-40B1-AB46-0B115EF2415D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9074F794-82F1-40B1-AB46-0B115EF2415D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C61268F-57F1-43DE-9B35-06702848ADB1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C61268F-57F1-43DE-9B35-06702848ADB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C61268F-57F1-43DE-9B35-06702848ADB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C61268F-57F1-43DE-9B35-06702848ADB1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1483C44C-1456-4360-B836-797E5D61388F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1483C44C-1456-4360-B836-797E5D61388F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1483C44C-1456-4360-B836-797E5D61388F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1483C44C-1456-4360-B836-797E5D61388F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D238E06-ED08-4C45-BDB7-4C15E5D5AB5B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D238E06-ED08-4C45-BDB7-4C15E5D5AB5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D238E06-ED08-4C45-BDB7-4C15E5D5AB5B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D238E06-ED08-4C45-BDB7-4C15E5D5AB5B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{9074F794-82F1-40B1-AB46-0B115EF2415D} = {5EE87317-9810-46E6-B754-72139146D76D}
+		{4C61268F-57F1-43DE-9B35-06702848ADB1} = {5EE87317-9810-46E6-B754-72139146D76D}
+		{1483C44C-1456-4360-B836-797E5D61388F} = {5EE87317-9810-46E6-B754-72139146D76D}
+		{2D238E06-ED08-4C45-BDB7-4C15E5D5AB5B} = {5EE87317-9810-46E6-B754-72139146D76D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C9E7864F-E0F4-446D-9A32-A8E9710FF894}

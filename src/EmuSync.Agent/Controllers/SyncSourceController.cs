@@ -1,5 +1,4 @@
 using EmuSync.Agent.Background;
-using EmuSync.Agent.Dto.Game;
 using EmuSync.Domain.Enums;
 using EmuSync.Services.LudusaviImporter.Interfaces;
 using EmuSync.Services.Managers.Interfaces;

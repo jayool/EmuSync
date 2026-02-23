@@ -14,7 +14,7 @@ public class QuickAddRequestBodyDtoValidator : AbstractValidator<QuickAddRequest
     public QuickAddRequestBodyDtoValidator()
     {
         RuleFor(x => x.Games).NotEmpty();
-        RuleForEach(x=> x.Games).SetValidator(new QuickAddGameDtoValidator());
+        RuleForEach(x => x.Games).SetValidator(new QuickAddGameDtoValidator());
     }
 }
 

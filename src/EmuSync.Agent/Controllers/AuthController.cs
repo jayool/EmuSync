@@ -5,7 +5,6 @@ using EmuSync.Services.Storage.Dropbox;
 using EmuSync.Services.Storage.GoogleDrive;
 using EmuSync.Services.Storage.OneDrive;
 using EmuSync.Services.Storage.SharedFolder;
-using System.ComponentModel.DataAnnotations;
 
 namespace EmuSync.Agent.Controllers;
 
@@ -102,7 +101,7 @@ public class AuthController(
     }
 
     [HttpPost("SharedFolder/AuthFinish")]
-    public async Task<IActionResult> SharedFolderAuthFinish([FromBody]SharedFolderAuthFinishDto requestBody, CancellationToken cancellationToken)
+    public async Task<IActionResult> SharedFolderAuthFinish([FromBody] SharedFolderAuthFinishDto requestBody, CancellationToken cancellationToken)
     {
         LogRequest($"{nameof(SharedFolderAuthFinish)}", requestBody);
 

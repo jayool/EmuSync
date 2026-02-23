@@ -3,15 +3,6 @@ import { SystemInfo } from "@/renderer/types";
 
 const controller = "System"
 
-export async function getAgentSystemInfo(): Promise<SystemInfo> {
-
-    const path = `${controller}/Info`;
-
-    return await get({
-        path
-    });
-}
-
 export async function checkApiIsRunning(): Promise<boolean> {
 
     const path = `${controller}/HealthCheck`;

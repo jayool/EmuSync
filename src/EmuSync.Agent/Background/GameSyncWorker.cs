@@ -23,6 +23,7 @@ public class GameSyncWorker(
     private static DateTime _nextRunTime = DateTime.MinValue;
 
     public static DateTime NextRunTime => _nextRunTime;
+
     public static void ResetNextRunTime()
     {
         _nextRunTime = DateTime.MinValue;

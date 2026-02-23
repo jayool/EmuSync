@@ -105,7 +105,7 @@ public class LocalGameSaveBackupService(
         SyncSourceEntity syncSource = await GetLocalSyncSourceAsync(cancellationToken);
 
         int maxBackups = game.MaximumLocalGameBackups
-            ?? syncSource.MaximumLocalGameBackups 
+            ?? syncSource.MaximumLocalGameBackups
             ?? DomainConstants.DefaultMaximumLocalGameBackups;
 
         if (manifests.Count > maxBackups)

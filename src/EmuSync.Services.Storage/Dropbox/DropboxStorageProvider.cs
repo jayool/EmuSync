@@ -3,7 +3,6 @@ using Dropbox.Api.Files;
 using EmuSync.Domain.Objects;
 using EmuSync.Services.Storage.Interfaces;
 using Microsoft.Extensions.Options;
-using System.Text;
 using System.Text.Json;
 
 namespace EmuSync.Services.Storage.Dropbox;

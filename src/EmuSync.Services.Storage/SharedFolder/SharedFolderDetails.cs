@@ -16,7 +16,7 @@ public record SharedFolderDetails
     /// Optional password for accessing the folder
     /// </summary>
     public string? Password { get; set; }
-    
+
     public bool IsWindowsShared()
     {
         return !string.IsNullOrEmpty(Path)

@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 namespace EmuSync.Services.Managers;
 
 public class GameSyncManager(
-    ILogger<GameManager> logger,
+    ILogger<GameSyncManager> logger,
     ILocalDataAccessor localDataAccessor,
     IStorageProviderFactory storageProviderFactory,
     IGameManager gameManager,
@@ -393,7 +393,7 @@ public class GameSyncManager(
         }
         catch (Exception ex)
         {
-            Logger.LogError("Failed to delete file {file}", filePath);
+            Logger.LogError(ex, "Failed to delete file {file}", filePath);
         }
     }
 }

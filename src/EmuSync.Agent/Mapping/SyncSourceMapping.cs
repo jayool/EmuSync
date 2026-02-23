@@ -1,5 +1,4 @@
-﻿using EmuSync.Agent.Dto.Game;
-using EmuSync.Domain;
+﻿using EmuSync.Domain;
 
 namespace EmuSync.Agent.Mapping;
 
