@@ -1,0 +1,60 @@
+name: Build Agent
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Publish Windows agent
+        run: |
+          dotnet publish src/EmuSync.Agent/EmuSync.Agent.csproj `
+            -c Release `
+            -r win-x64 `
+            --self-contained true `
+            -p:PublishSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true `
+            -o ./publish/windows
+        shell: pwsh
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: emusync-agent-windows
+          path: ./publish/windows/EmuSync.Agent.exe
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Publish Linux agent
+        run: |
+          dotnet publish src/EmuSync.Agent/EmuSync.Agent.csproj \
+            -c Release \
+            -r linux-x64 \
+            --self-contained true \
+            -p:PublishSingleFile=true \
+            -p:IncludeNativeLibrariesForSelfExtract=true \
+            -o ./publish/linux
+
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: emusync-agent-linux
+          path: ./publish/linux/EmuSync.Agent
